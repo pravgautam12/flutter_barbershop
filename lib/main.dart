@@ -233,6 +233,8 @@ class PlaceListItem extends StatelessWidget {
     return PD;
   }
 
+  String a = '';
+
   PlaceDetails? placedetails;
   @override
   Widget build(BuildContext context) {
@@ -265,9 +267,29 @@ class PlaceListItem extends StatelessWidget {
                         } else if (snapshot.hasData) {
                           // Display the retrieved address
                           placedetails = snapshot.data!;
-                          return Text(placedetails!.address);
+                          //return Text(placedetails!.address);
+                          placedetails!.openStatus
+                              ? a = 'Open now'
+                              : a = 'Closed';
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(placedetails!.address),
+                              a == 'Open now'
+                                  ? Text(a,
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.green))
+                                  : Text(a,
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.red))
+                            ],
+                          );
                         } else {
-                          return Text('Address not available');
+                          return const Text(
+                              'Address and openStatus not available');
                         }
                       },
                     ),
@@ -283,11 +305,14 @@ class PlaceListItem extends StatelessWidget {
           context,
           MaterialPageRoute(
               builder: (context) => PlaceDetail(
-                  placeId: place!.placeId,
-                  name: place!.name,
-                  address: placedetails!.address,
-                  photo_reference: place!.photoReference,
-                  photos: placedetails!.photos)),
+                    placeId: place!.placeId,
+                    name: place!.name,
+                    address: placedetails!.address,
+                    photo_reference: place!.photoReference,
+                    photos: placedetails!.photos,
+                    openStatus: a,
+                    openingHours: placedetails!.openingHours,
+                  )),
         );
       }),
     ));
