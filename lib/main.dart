@@ -4,6 +4,7 @@ import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
 import 'package:flutter_barbershop/location.dart';
 import 'package:flutter_barbershop/place_detail.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,13 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.blue,
-              backgroundColor: Colors.white,
-              accentColor: Colors.white,
-              cardColor: Colors.white),
-          fontFamily: 'Poppins'),
+      theme: ThemeData(fontFamily: 'Poppins'),
       home: const MyHomePage(),
     );
   }
@@ -85,6 +80,12 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(children: <Widget>[
         Container(
           margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
+          decoration: BoxDecoration(boxShadow: [
+            BoxShadow(
+                color: Color(0xff1D1617).withOpacity(0.11),
+                blurRadius: 40,
+                spreadRadius: 0.0)
+          ]),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -118,17 +119,37 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                 },
                 decoration: InputDecoration(
-                  icon: Container(
-                    width: 10,
-                    height: 10,
-                    child: const Icon(
-                      Icons.home,
-                      color: Colors.black,
-                    ),
-                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                   hintText: locationText,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.only(left: 8.0, top: 16.0),
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  contentPadding: const EdgeInsets.all(15),        
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SvgPicture.asset('assets/icons/Search.svg'),
+                  ),
+                  suffixIcon: Container(
+                    width: 100,
+                    child: IntrinsicHeight(
+                        child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const VerticalDivider(
+                          color: Colors.black,
+                          indent: 10,
+                          endIndent: 10,
+                          thickness: 0.1,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset('assets/icons/Filter.svg'),
+                        )
+                      ],
+                    )),
+                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none)
                 ),
               ),
               const SizedBox(height: 10),
