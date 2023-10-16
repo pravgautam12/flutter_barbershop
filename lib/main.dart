@@ -119,38 +119,38 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                 },
                 decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: locationText,
-                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                  contentPadding: const EdgeInsets.all(15),        
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: SvgPicture.asset('assets/icons/Search.svg'),
-                  ),
-                  suffixIcon: Container(
-                    width: 100,
-                    child: IntrinsicHeight(
-                        child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const VerticalDivider(
-                          color: Colors.black,
-                          indent: 10,
-                          endIndent: 10,
-                          thickness: 0.1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SvgPicture.asset('assets/icons/Filter.svg'),
-                        )
-                      ],
-                    )),
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide.none)
-                ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: locationText,
+                    hintStyle:
+                        const TextStyle(color: Colors.grey, fontSize: 14),
+                    contentPadding: const EdgeInsets.all(15),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SvgPicture.asset('assets/icons/Search.svg'),
+                    ),
+                    suffixIcon: Container(
+                      width: 100,
+                      child: IntrinsicHeight(
+                          child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const VerticalDivider(
+                            color: Colors.black,
+                            indent: 10,
+                            endIndent: 10,
+                            thickness: 0.1,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset('assets/icons/Filter.svg'),
+                          )
+                        ],
+                      )),
+                    ),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
@@ -254,6 +254,8 @@ class PlaceListItem extends StatelessWidget {
     return PD;
   }
 
+  String a = '';
+
   PlaceDetails? placedetails;
   @override
   Widget build(BuildContext context) {
@@ -286,9 +288,29 @@ class PlaceListItem extends StatelessWidget {
                         } else if (snapshot.hasData) {
                           // Display the retrieved address
                           placedetails = snapshot.data!;
-                          return Text(placedetails!.address);
+                          //return Text(placedetails!.address);
+                          placedetails!.openStatus
+                              ? a = 'Open now'
+                              : a = 'Closed';
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(placedetails!.address),
+                              a == 'Open now'
+                                  ? Text(a,
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.green))
+                                  : Text(a,
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.red))
+                            ],
+                          );
                         } else {
-                          return Text('Address not available');
+                          return const Text(
+                              'Address and openStatus not available');
                         }
                       },
                     ),
@@ -297,18 +319,21 @@ class PlaceListItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
                             "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg")),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 30),
                   ]))),
       onTap: () async => await Future.microtask(() {
         Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => PlaceDetail(
-                  placeId: place!.placeId,
-                  name: place!.name,
-                  address: placedetails!.address,
-                  photo_reference: place!.photoReference,
-                  photos: placedetails!.photos)),
+                    placeId: place!.placeId,
+                    name: place!.name,
+                    address: placedetails!.address,
+                    photo_reference: place!.photoReference,
+                    photos: placedetails!.photos,
+                    openStatus: a,
+                    openingHours: placedetails!.openingHours,
+                  )),
         );
       }),
     ));
