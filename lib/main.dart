@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: const MyHomePage(),
+      home: Scaffold(backgroundColor: Colors.white, body: const MyHomePage()),
     );
   }
 }
@@ -199,45 +199,45 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 /////////// NearbyPlacesList Class///////////////
 
-class NearbyPlacesList extends StatefulWidget {
-  final double latitude;
-  final double longitude;
+// class NearbyPlacesList extends StatefulWidget {
+//   final double latitude;
+//   final double longitude;
 
-  const NearbyPlacesList(
-      {super.key, required this.latitude, required this.longitude});
+//   const NearbyPlacesList(
+//       {super.key, required this.latitude, required this.longitude});
 
-  @override
-  State<NearbyPlacesList> createState() => _NearbyPlacesListState();
-}
+//   @override
+//   State<NearbyPlacesList> createState() => _NearbyPlacesListState();
+// }
 
-class _NearbyPlacesListState extends State<NearbyPlacesList> {
-  Future<List<PlaceResponse>>? places;
-  final sessionToken = const Uuid().v4();
+// class _NearbyPlacesListState extends State<NearbyPlacesList> {
+//   Future<List<PlaceResponse>>? places;
+//   final sessionToken = const Uuid().v4();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Nearby Places'),
-      // ),
-      backgroundColor: const Color.fromARGB(255, 155, 141, 32),
-      body: FutureBuilder<List<PlaceResponse>>(
-          future: PlaceApiProvider(sessionToken)
-              .getNearbyPlaces(widget.latitude, widget.longitude),
-          builder: (context, snapshot) => snapshot.connectionState ==
-                  ConnectionState.waiting
-              ? const CircularProgressIndicator()
-              : snapshot.hasError
-                  ? Text('Error: ${snapshot.error}')
-                  : snapshot.hasData
-                      ? ListView.builder(
-                          itemBuilder: (context, index) => PlaceListItem(
-                              place: snapshot.data?[index] as PlaceResponse),
-                          itemCount: snapshot.data?.length)
-                      : const Text("no data found")),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       // appBar: AppBar(
+//       //   title: const Text('Nearby Places'),
+//       // ),
+//       backgroundColor: const Color.fromARGB(255, 155, 141, 32),
+//       body: FutureBuilder<List<PlaceResponse>>(
+//           future: PlaceApiProvider(sessionToken)
+//               .getNearbyPlaces(widget.latitude, widget.longitude),
+//           builder: (context, snapshot) => snapshot.connectionState ==
+//                   ConnectionState.waiting
+//               ? const CircularProgressIndicator()
+//               : snapshot.hasError
+//                   ? Text('Error: ${snapshot.error}')
+//                   : snapshot.hasData
+//                       ? ListView.builder(
+//                           itemBuilder: (context, index) => PlaceListItem(
+//                               place: snapshot.data?[index] as PlaceResponse),
+//                           itemCount: snapshot.data?.length)
+//                       : const Text("no data found")),
+//     );
+//   }
+// }
 
 //////////// NearbyPlacesListClass ends //////////////
 
@@ -259,16 +259,15 @@ class PlaceListItem extends StatelessWidget {
   PlaceDetails? placedetails;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        child: GestureDetector(
+    return GestureDetector(
       child: Container(
           //color: Color.fromARGB(255, 196, 195, 185),
           child: Padding(
-              padding: const EdgeInsets.all(0),
+              padding: const EdgeInsets.all(5),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     Text(
                       place!.name,
                       style: const TextStyle(
@@ -318,8 +317,11 @@ class PlaceListItem extends StatelessWidget {
                     ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg")),
+                          "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                          fit: BoxFit.contain,
+                        )),
                     const SizedBox(height: 30),
+                    Divider(thickness: 3),
                   ]))),
       onTap: () async => await Future.microtask(() {
         Navigator.push(
@@ -336,6 +338,6 @@ class PlaceListItem extends StatelessWidget {
                   )),
         );
       }),
-    ));
+    );
   }
 }
