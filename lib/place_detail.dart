@@ -115,7 +115,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                           fontSize: 12,
                                           color: Colors.red),
                                     ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 5),
                               Container(
                                   width: 400,
                                   height: 300,
@@ -144,7 +144,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
             Container(
               color: Colors.white,
               child: Padding(
-                padding: EdgeInsets.all(4),
+                padding: EdgeInsets.all(0),
                 child: Material(
                     //child: Column(
                     //crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,25 +239,29 @@ class _PlaceDetailPageState extends State<PlaceDetail>
             //const Text('photos'),
             Container(
                 color: Colors.white,
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2),
-                  itemCount: widget.photos.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Image.network(
-                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                            fit: BoxFit.cover,
-                            //centerSlice: Rect.,
-                          )),
-                      // onTap: () =>
-                      //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                    );
-                  },
-                ))
+                child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2),
+                      itemCount: widget.photos.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(1, 0, 1, 1),
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Image.network(
+                                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                fit: BoxFit.cover,
+                                //centerSlice: Rect.,
+                              )),
+                          // onTap: () =>
+                          //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                        );
+                      },
+                    )))
           ],
         ));
   }

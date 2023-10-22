@@ -36,6 +36,7 @@ class PlaceDetails {
   bool openStatus;
   double rating;
   List<dynamic> periods;
+  //List<dynamic> reviews;
 
   PlaceDetails(this.address, this.photos, this.openingHours, this.openStatus,
       this.rating, this.periods);
@@ -56,6 +57,11 @@ class PlaceResponse {
   String toString() {
     return 'PlaceResponse(description: $name, placeId: $placeId)';
   }
+}
+
+class DistanceMatrix {
+  String distance;
+  DistanceMatrix(this.distance);
 }
 
 class Suggestion {
@@ -198,6 +204,26 @@ class PlaceApiProvider {
       throw Exception(result['error message']);
     } else {
       throw Exception('Failed to find address');
+    }
+  }
+
+  Future<DistanceMatrix> getDistanceMatrix(
+      String placeId, double latitude, double longitude) async {
+    final request =
+        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken';
+
+    final response = await http.get(Uri.parse(request));
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        DistanceMatrix dm = DistanceMatrix('');
+        dm.distance = result['rows'][0]['elements'][0]['distance']['text'];
+        return dm;
+      }
+      throw Exception(result['error message']);
+    } else {
+      throw Exception('could not find distance');
     }
   }
 }

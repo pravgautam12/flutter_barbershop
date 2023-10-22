@@ -11,6 +11,9 @@ void main() {
   runApp(const MyApp());
 }
 
+double lati = 0.00;
+double longi = 0.00;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -38,8 +41,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _controller = TextEditingController();
   String locationText = "Enter your location";
-  double lati = 0.00;
-  double longi = 0.00;
+  // double lati = 0.00;
+  // double longi = 0.00;
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
@@ -195,6 +198,8 @@ class PlaceListItem extends StatelessWidget {
   Future<PlaceDetails> fetchPlaceDetails(String p) async {
     final PlaceApi = new PlaceApiProvider(sessionToken);
     PlaceDetails PD = await PlaceApi.getAddress(p);
+    DistanceMatrix DM = await PlaceApi.getDistanceMatrix(p, lati, longi);
+
     return PD;
   }
 
@@ -232,9 +237,7 @@ class PlaceListItem extends StatelessWidget {
                           // Display the retrieved address
                           placedetails = snapshot.data!;
                           //return Text(placedetails!.address);
-                          placedetails!.openStatus
-                              ? a = 'Open now'
-                              : a = 'Closed';
+                          placedetails!.openStatus ? a = 'Open' : a = 'Closed';
 
                           String test = NextOpenOrClose(
                               placedetails!.periods, placedetails!.openStatus);
@@ -243,33 +246,25 @@ class PlaceListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(placedetails!.address),
-                              a == 'Open now'
-                                  ? Text(a,
-                                      style: const TextStyle(
-                                          fontStyle: FontStyle.italic,
-                                          color: Colors.green))
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                          Text(a,
-                                              style: const TextStyle(
-                                                  fontStyle: FontStyle.italic,
-                                                  fontSize: 14,
-                                                  color: Colors.red)),
-                                          Text(test,
-                                              style: const TextStyle(
-                                                fontStyle: FontStyle.italic,
-                                                fontSize: 14,
-                                                color: Colors.red,
-                                              )),
-                                          const SizedBox(width: 50),
-                                          Row(children: [
-                                            Text(placedetails!.rating
-                                                .toString()),
-                                            Icon(Icons.star),
-                                          ])
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('$a $test',
+                                        style: const TextStyle(
+                                            fontStyle: FontStyle.italic,
+                                            fontSize: 14,
+                                            color: Colors.red)),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            placedetails!.rating.toString(),
+                                          ),
+                                          Icon(Icons.star),
                                         ])
+                                  ])
                             ],
                           );
                         } else {
@@ -352,7 +347,7 @@ class PlaceListItem extends StatelessWidget {
             List<String> times = findOpenAndCloseTime(n, list);
             String day = returnsDay(n);
             String formatted_time = formatTime(times[0]);
-            return 'Open $formatted_time $day';
+            return 'Opens $formatted_time $day';
           }
         }
       } else {
@@ -361,7 +356,7 @@ class PlaceListItem extends StatelessWidget {
         if (combinedTime < int.parse(times[0])) {
           String day = returnsDay(n);
           String formatted_time = formatTime(times[0]);
-          return 'Open $formatted_time';
+          return 'Opens $formatted_time';
         }
 
         if (combinedTime > int.parse(times[1])) {
@@ -378,7 +373,7 @@ class PlaceListItem extends StatelessWidget {
               List<String> times = findOpenAndCloseTime(n, list);
               String formatted_time = formatTime(times[0]);
 
-              return 'Open $formatted_time $day';
+              return 'Opens $formatted_time $day';
             }
           }
         }
