@@ -83,39 +83,47 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                               Text(
                                 widget.name,
                                 style: const TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
                                     fontFamily: 'Poppins',
                                     decoration: TextDecoration.none),
                               ),
+                              Divider(thickness: 3),
                               Text(
                                 widget.address,
                                 style: const TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.black,
                                     fontFamily: 'Poppins',
                                     decoration: TextDecoration.none),
                               ),
+                              Divider(thickness: 3),
                               widget.openStatus == 'Open now'
                                   ? Text(
                                       widget.openStatus,
                                       style: const TextStyle(
                                           fontStyle: FontStyle.italic,
+                                          fontSize: 12,
                                           color: Colors.green),
                                     )
                                   : Text(
                                       widget.openStatus,
                                       style: const TextStyle(
                                           fontStyle: FontStyle.italic,
+                                          fontSize: 12,
                                           color: Colors.red),
                                     ),
                               const SizedBox(height: 10),
-                              ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                      "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg")),
+                              Container(
+                                  width: 400,
+                                  height: 300,
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                          "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                          fit: BoxFit.cover))),
                             ],
                           ))),
                 ),
@@ -192,6 +200,24 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                               //     widget.openingHours[index])
 
                                               );
+                                        }
+
+                                        if (parts.length == 2) {
+                                          final day = parts[0];
+                                          final time = parts[1];
+                                          return Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      15, 0, 15, 0),
+                                              child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(day),
+                                                    SizedBox(width: 5),
+                                                    Text(time),
+                                                  ]));
                                         } else {
                                           return Text(
                                               widget.openingHours[index]);
@@ -236,16 +262,3 @@ class _PlaceDetailPageState extends State<PlaceDetail>
         ));
   }
 }
-
-
-
-
-
-// ListView.builder(
-//                                             itemCount:
-//                                                 widget.openingHours.length,
-//                                             itemBuilder: (BuildContext context,
-//                                                 int index) {
-//                                               return Text(
-//                                                   widget.openingHours[index]);
-//                                             })

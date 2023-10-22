@@ -5,6 +5,7 @@ import 'package:flutter_barbershop/place_service.dart';
 import 'package:flutter_barbershop/location.dart';
 import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,11 +71,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //     //title: Text(widget.title),
-      //     //title: const Text('wassup'),
-      //     backgroundColor: Colors.white,
-      //     elevation: 0.0,),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
           child: Column(children: <Widget>[
@@ -103,15 +99,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         .getPlaceDetailFromId(result.placeId);
                     lati = placeDetails.latitude;
                     longi = placeDetails.longitude;
-                    // await Future.microtask(() {
-                    //   Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => NearbyPlacesList(
-                    //             latitude: placeIdLati,
-                    //             longitude: placeIdLongi)),
-                    //   );
-                    // });
                     setState(() {
                       _controller.text = result.description;
                       showNearbyPlaces = true;
@@ -197,49 +184,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-/////////// NearbyPlacesList Class///////////////
-
-// class NearbyPlacesList extends StatefulWidget {
-//   final double latitude;
-//   final double longitude;
-
-//   const NearbyPlacesList(
-//       {super.key, required this.latitude, required this.longitude});
-
-//   @override
-//   State<NearbyPlacesList> createState() => _NearbyPlacesListState();
-// }
-
-// class _NearbyPlacesListState extends State<NearbyPlacesList> {
-//   Future<List<PlaceResponse>>? places;
-//   final sessionToken = const Uuid().v4();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // appBar: AppBar(
-//       //   title: const Text('Nearby Places'),
-//       // ),
-//       backgroundColor: const Color.fromARGB(255, 155, 141, 32),
-//       body: FutureBuilder<List<PlaceResponse>>(
-//           future: PlaceApiProvider(sessionToken)
-//               .getNearbyPlaces(widget.latitude, widget.longitude),
-//           builder: (context, snapshot) => snapshot.connectionState ==
-//                   ConnectionState.waiting
-//               ? const CircularProgressIndicator()
-//               : snapshot.hasError
-//                   ? Text('Error: ${snapshot.error}')
-//                   : snapshot.hasData
-//                       ? ListView.builder(
-//                           itemBuilder: (context, index) => PlaceListItem(
-//                               place: snapshot.data?[index] as PlaceResponse),
-//                           itemCount: snapshot.data?.length)
-//                       : const Text("no data found")),
-//     );
-//   }
-// }
-
-//////////// NearbyPlacesListClass ends //////////////
 
 class PlaceListItem extends StatelessWidget {
   final PlaceResponse? place;
@@ -263,7 +207,7 @@ class PlaceListItem extends StatelessWidget {
       child: Container(
           //color: Color.fromARGB(255, 196, 195, 185),
           child: Padding(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(10),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -292,6 +236,9 @@ class PlaceListItem extends StatelessWidget {
                               ? a = 'Open now'
                               : a = 'Closed';
 
+                          String test = NextOpenOrClose(
+                              placedetails!.periods, placedetails!.openStatus);
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -301,10 +248,28 @@ class PlaceListItem extends StatelessWidget {
                                       style: const TextStyle(
                                           fontStyle: FontStyle.italic,
                                           color: Colors.green))
-                                  : Text(a,
-                                      style: const TextStyle(
-                                          fontStyle: FontStyle.italic,
-                                          color: Colors.red))
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                          Text(a,
+                                              style: const TextStyle(
+                                                  fontStyle: FontStyle.italic,
+                                                  fontSize: 14,
+                                                  color: Colors.red)),
+                                          Text(test,
+                                              style: const TextStyle(
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 14,
+                                                color: Colors.red,
+                                              )),
+                                          const SizedBox(width: 50),
+                                          Row(children: [
+                                            Text(placedetails!.rating
+                                                .toString()),
+                                            Icon(Icons.star),
+                                          ])
+                                        ])
                             ],
                           );
                         } else {
@@ -314,12 +279,15 @@ class PlaceListItem extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 10),
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                          fit: BoxFit.contain,
-                        )),
+                    Container(
+                        width: 400,
+                        height: 300,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                              fit: BoxFit.cover,
+                            ))),
                     const SizedBox(height: 30),
                     Divider(thickness: 3),
                   ]))),
@@ -339,5 +307,192 @@ class PlaceListItem extends StatelessWidget {
         );
       }),
     );
+  }
+
+  String NextOpenOrClose(List<dynamic> list, bool openstatus) {
+    final aDateTime = DateTime.now();
+    int hour = aDateTime.hour;
+    int minute = aDateTime.minute;
+    int combinedTime = hour * 100 + minute;
+
+    String day = DateFormat('EEEEE', 'en_US').format(aDateTime);
+    int n = 100;
+
+    if (day == "Sunday") {
+      n = 0;
+    } else if (day == "Monday") {
+      n = 1;
+    } else if (day == "Tuesday") {
+      n = 2;
+    } else if (day == "Wednesday") {
+      n = 3;
+    } else if (day == "Thursday") {
+      n = 4;
+    } else if (day == "Friday") {
+      n = 5;
+    } else if (day == "Saturday") {
+      n = 6;
+    }
+
+    if (!openstatus) {
+      bool isItClosed = isItClosedForTheWholeDay(n, list);
+      int lengthOfList = list.length;
+
+      if (isItClosed) {
+        while (true) {
+          n = n + 1;
+          if (n >= lengthOfList) {
+            n = 0;
+          } else {
+            n = n;
+          }
+
+          bool closedOrNot = isItClosedForTheWholeDay(n, list);
+          if (closedOrNot == false) {
+            List<String> times = findOpenAndCloseTime(n, list);
+            String day = returnsDay(n);
+            String formatted_time = formatTime(times[0]);
+            return 'Open $formatted_time $day';
+          }
+        }
+      } else {
+        List<String> times = findOpenAndCloseTime(n, list);
+
+        if (combinedTime < int.parse(times[0])) {
+          String day = returnsDay(n);
+          String formatted_time = formatTime(times[0]);
+          return 'Open $formatted_time';
+        }
+
+        if (combinedTime > int.parse(times[1])) {
+          while (true) {
+            n = n + 1;
+            if (n >= lengthOfList) {
+              n = 0;
+            } else {
+              n = n;
+            }
+            bool closedOrNot = isItClosedForTheWholeDay(n, list);
+            if (closedOrNot == false) {
+              String day = returnsDay(n);
+              List<String> times = findOpenAndCloseTime(n, list);
+              String formatted_time = formatTime(times[0]);
+
+              return 'Open $formatted_time $day';
+            }
+          }
+        }
+      }
+    }
+
+    if (openstatus) {
+      List<String> times = findOpenAndCloseTime(n, list);
+
+      String formatted_time = formatTime(times[1]);
+      return 'Closes $formatted_time';
+    } else {}
+
+    return '';
+  }
+
+  bool isItClosedForTheWholeDay(num n, List<dynamic> listi) {
+    for (var element in listi) {
+      if (n == element['close']['day']) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  String returnsDay(int n) {
+    switch (n) {
+      case 0:
+        return 'Sun';
+      case 1:
+        return 'Mon';
+      case 2:
+        return 'Tue';
+      case 3:
+        return 'Wed';
+      case 4:
+        return 'Thu';
+      case 5:
+        return 'Fri';
+      case 6:
+        return 'Sat';
+      default:
+        return 'Could not convert day';
+    }
+  }
+
+  List<String> findOpenAndCloseTime(num x, List<dynamic> list) {
+    List<String> openAndCloseTime = [];
+    for (var element in list) {
+      if (x == element['close']['day']) {
+        String openTime = element['open']['time'];
+        String closeTime = element['close']['time'];
+        openAndCloseTime.add(openTime);
+        openAndCloseTime.add(closeTime);
+        return openAndCloseTime;
+      }
+    }
+    throw Exception('Could not find');
+  }
+
+  String formatTime(String x) {
+    String result = (int.parse(x) / 100).toStringAsFixed(2);
+    List<String> hourAndMinutes = result.split('.');
+    List<String> hourSplit =
+        ((int.parse(hourAndMinutes[0]) / 10).toStringAsFixed(1)).split('.');
+    if (hourAndMinutes[1] == "00") {
+      if (hourAndMinutes[0] != "00") {
+        if (hourSplit[0] == '0') {
+          return '${hourSplit[1]} AM';
+        }
+        if (hourSplit[0] != '0') {
+          if (int.parse(hourAndMinutes[0]) < 12) {
+            return '${hourAndMinutes[0]} AM';
+          }
+          if (int.parse(hourAndMinutes[0]) >= 12) {
+            if (int.parse(hourAndMinutes[0]) > 12) {
+              return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])} PM';
+            } else if (int.parse(hourAndMinutes[0]) == 12) {
+              return '${hourAndMinutes[0]} PM';
+            }
+          }
+        }
+
+        if (hourAndMinutes[0] == '00') {
+          return '12 AM';
+        }
+      }
+    }
+
+    if (hourAndMinutes[1] != '00') {
+      if (hourAndMinutes[0] != '00') {
+        if (hourSplit[0] == '0') {
+          return '${hourSplit[1]}:${hourAndMinutes[1]} AM';
+        } else if (hourSplit[0] != '0') {
+          if (int.parse(hourAndMinutes[0]) < 12) {
+            return '${hourAndMinutes[0]}:${hourAndMinutes[1]} AM';
+          } else if (int.parse(hourAndMinutes[0]) >= 12) {
+            if (int.parse(hourAndMinutes[0]) > 12) {
+              return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])}:${hourAndMinutes[1]} PM';
+            } else if (int.parse(hourAndMinutes[0]) == 12) {
+              return '${hourAndMinutes[0]}:${hourAndMinutes[1]} PM';
+            }
+          }
+        }
+      } else if (hourAndMinutes[0] == '00') {
+        return '12:${hourAndMinutes[1]} AM';
+      }
+    }
+    return '';
+  }
+
+  String convertTwentyFourHourToTwelveHour(String x) {
+    int y = int.parse(x) - 12;
+    return y.toString();
   }
 }

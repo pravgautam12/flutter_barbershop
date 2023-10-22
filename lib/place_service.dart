@@ -34,8 +34,11 @@ class PlaceDetails {
   List<String> photos;
   List<String> openingHours;
   bool openStatus;
+  double rating;
+  List<dynamic> periods;
 
-  PlaceDetails(this.address, this.photos, this.openingHours, this.openStatus);
+  PlaceDetails(this.address, this.photos, this.openingHours, this.openStatus,
+      this.rating, this.periods);
 }
 
 class PlaceResponse {
@@ -163,7 +166,7 @@ class PlaceApiProvider {
 
   Future<PlaceDetails> getAddress(String placeId) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating&key=$apiKey&sessiontoken=$sessionToken';
 
     final response = await http.get(Uri.parse(request));
 
@@ -172,7 +175,7 @@ class PlaceApiProvider {
       if (result['status'] == 'OK') {
         //final address = result['result']['formatted_address'];
 
-        PlaceDetails pd = PlaceDetails('', [], [], false);
+        PlaceDetails pd = PlaceDetails('', [], [], false, 0, []);
 
         pd.address = result['result']['formatted_address'];
 
@@ -187,6 +190,9 @@ class PlaceApiProvider {
         pd.openStatus = result['result']['opening_hours']['open_now'];
         List<dynamic> hours = result['result']['opening_hours']['weekday_text'];
         pd.openingHours = hours.map((p) => p.toString()).toList();
+        pd.rating = result['result']['rating'].toDouble();
+        pd.periods = result['result']['opening_hours']['periods'];
+
         return pd;
       }
       throw Exception(result['error message']);
