@@ -1,3 +1,5 @@
+//import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -14,17 +16,18 @@ class PlaceDetail extends StatefulWidget {
   final List<String> photos;
   final String openStatus;
   final List<String> openingHours;
+  final List<dynamic> reviews;
 
-  const PlaceDetail({
-    super.key,
-    this.placeId,
-    required this.name,
-    required this.address,
-    required this.photo_reference,
-    required this.photos,
-    required this.openStatus,
-    required this.openingHours,
-  });
+  const PlaceDetail(
+      {super.key,
+      this.placeId,
+      required this.name,
+      required this.address,
+      required this.photo_reference,
+      required this.photos,
+      required this.openStatus,
+      required this.openingHours,
+      required this.reviews});
 
   static bool inner = true;
   @override
@@ -146,11 +149,6 @@ class _PlaceDetailPageState extends State<PlaceDetail>
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Material(
-                    //child: Column(
-                    //crossAxisAlignment: CrossAxisAlignment.start,
-                    //children: <Widget>[
-                    //Text(widget.openStatus, style: commonTextStyle()),
-
                     child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,8 +232,63 @@ class _PlaceDetailPageState extends State<PlaceDetail>
               ),
             ),
 
-            const Text('wassup',
-                style: TextStyle(color: Colors.white, fontSize: 50)),
+            Container(
+                color: Colors.white,
+                child: ListView.builder(
+                  itemCount: widget.reviews.length,
+                  itemBuilder: (context, index) => Container(
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  '${widget.reviews[index]['author_name'] ?? 'N/A'}',
+                                  textAlign: TextAlign.left,
+                                  style: const TextStyle(
+                                      decoration: TextDecoration.none,
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.normal,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins')),
+                              Row(children: [
+                                Text(
+                                  '${widget.reviews[index]['rating']}',
+                                  style: ReviewTextStyle(),
+                                ),
+                                ...List.generate(5, (i) {
+                                  return Icon(
+                                    i < widget.reviews[index]['rating']
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Color.fromARGB(255, 255, 230, 9),
+                                  );
+                                }),
+                                const SizedBox(width: 10),
+                                Text(
+                                    '${widget.reviews[index]['relative_time_description']}',
+                                    style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                        fontStyle: FontStyle.normal,
+                                        fontWeight: FontWeight.normal,
+                                        fontFamily: 'Poppins')),
+                              ]),
+                              Text(
+                                '${widget.reviews[index]['text']}',
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontStyle: FontStyle.normal,
+                                    fontWeight: FontWeight.normal,
+                                    fontFamily: 'Poppins'),
+                              ),
+                            ])),
+                  ),
+                )),
             //const Text('photos'),
             Container(
                 color: Colors.white,
@@ -264,5 +317,15 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                     )))
           ],
         ));
+  }
+
+  TextStyle ReviewTextStyle() {
+    return const TextStyle(
+        decoration: TextDecoration.none,
+        color: Colors.black,
+        fontSize: 14,
+        fontStyle: FontStyle.normal,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'Poppins');
   }
 }

@@ -197,7 +197,7 @@ class PlaceListItem extends StatelessWidget {
 
   Future<PlaceDetails> fetchPlaceDetails(String p) async {
     final PlaceApi = new PlaceApiProvider(sessionToken);
-    PlaceDetails PD = await PlaceApi.getAddress(p);
+    PlaceDetails PD = await PlaceApi.getAddress(p, lati, longi);
     DistanceMatrix DM = await PlaceApi.getDistanceMatrix(p, lati, longi);
 
     return PD;
@@ -236,7 +236,9 @@ class PlaceListItem extends StatelessWidget {
                         } else if (snapshot.hasData) {
                           // Display the retrieved address
                           placedetails = snapshot.data!;
-                          //return Text(placedetails!.address);
+                          List<String> address =
+                              placedetails!.address.split(',');
+                          //return Text(placedetails0!.address);
                           placedetails!.openStatus ? a = 'Open' : a = 'Closed';
 
                           String test = NextOpenOrClose(
@@ -245,7 +247,7 @@ class PlaceListItem extends StatelessWidget {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(placedetails!.address),
+                              Text(address[0]),
                               Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -255,6 +257,7 @@ class PlaceListItem extends StatelessWidget {
                                             fontStyle: FontStyle.italic,
                                             fontSize: 14,
                                             color: Colors.red)),
+                                    Text(placedetails!.distance),
                                     Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
@@ -298,6 +301,7 @@ class PlaceListItem extends StatelessWidget {
                     photos: placedetails!.photos,
                     openStatus: a,
                     openingHours: placedetails!.openingHours,
+                    reviews: placedetails!.reviews,
                   )),
         );
       }),
