@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: Scaffold(backgroundColor: Colors.white, body: const MyHomePage()),
+      home: const Scaffold(backgroundColor: Colors.white, body: MyHomePage()),
     );
   }
 }
@@ -53,6 +53,18 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> callBackFunc() async {
+      updateLocationText();
+      final loc = LocationService();
+      Coordinates coord = await loc.getCurrentLocation();
+      lati = coord.lat;
+      longi = coord.long;
+
+      setState(() {
+        showNearbyPlaces = true;
+      });
+  }
+
   Future<List<PlaceResponse>> fetchNearbyPlaces(
       double latitude, double longitude) async {
     final sessionToken = const Uuid().v4();
@@ -82,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
           margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
           decoration: BoxDecoration(boxShadow: [
             BoxShadow(
-                color: Color(0xff1D1617).withOpacity(0.11),
+                color: const Color(0xff1D1617).withOpacity(0.11),
                 blurRadius: 40,
                 spreadRadius: 0.0)
           ]),
@@ -96,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   final sessionToken = const Uuid().v4();
                   final result = await showSearch(
                     context: context,
-                    delegate: AddressSearch(sessionToken),
+                    delegate: AddressSearch(sessionToken, callBackFunc: callBackFunc),
                   );
                   if (result != null) {
                     final placeDetails = await PlaceApiProvider(sessionToken)
@@ -153,22 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 10),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  updateLocationText();
-                  final loc = LocationService();
-                  Coordinates coord = await loc.getCurrentLocation();
-                  lati = coord.lat;
-                  longi = coord.long;
-
-                  setState(() {
-                    showNearbyPlaces = true;
-                  });
-                },
-                child: const Text("Use your location",
-                    style: TextStyle(color: Colors.black)),
-              ),
               Visibility(
                   visible: showNearbyPlaces,
                   //child: SingleChildScrollView(
