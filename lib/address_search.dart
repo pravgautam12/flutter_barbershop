@@ -49,14 +49,31 @@ class AddressSearch extends SearchDelegate<Suggestion> {
               query, Localizations.localeOf(context).languageCode),
       builder: (context, snapshot) => query == ''
           ? ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-            onPressed: () async {
-          callBackFunc();
-          close(context, Suggestion('', '')); //check this
-            },
-            child: const Text("Use your location",
-            style: TextStyle(color: Colors.black)),
-          )
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: const EdgeInsets.all(10)
+              ),
+              onPressed: () async {
+                callBackFunc();
+                close(context, Suggestion('', '')); //check this
+              },
+              child: const Row(
+                //mainAxisSize: MainAxisSize.min, //when commented out, button covers the full length of the row
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Colors.blue
+                  ),
+                  Text(
+                    "Use your location",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      )
+                  )
+                ],
+              ),
+            )
           : snapshot.hasData
               ? ListView.builder(
                   itemBuilder: (context, index) => ListTile(
