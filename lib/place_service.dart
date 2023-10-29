@@ -36,9 +36,11 @@ class PlaceDetails {
   bool openStatus;
   double rating;
   List<dynamic> periods;
+  List<dynamic> reviews;
+  String distance;
 
   PlaceDetails(this.address, this.photos, this.openingHours, this.openStatus,
-      this.rating, this.periods);
+      this.rating, this.periods, this.reviews, this.distance);
 }
 
 class PlaceResponse {
@@ -56,6 +58,11 @@ class PlaceResponse {
   String toString() {
     return 'PlaceResponse(description: $name, placeId: $placeId)';
   }
+}
+
+class DistanceMatrix {
+  String distance;
+  DistanceMatrix(this.distance);
 }
 
 class Suggestion {
@@ -164,18 +171,27 @@ class PlaceApiProvider {
     }
   }
 
-  Future<PlaceDetails> getAddress(String placeId) async {
+  Future<PlaceDetails> getAddress(
+      String placeId, double latitude, double longitude) async {
+    PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [], '');
+
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating,reviews&key=$apiKey&sessiontoken=$sessionToken';
+
+    final request1 =
+        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken&units=imperial';
 
     final response = await http.get(Uri.parse(request));
+    final response1 = await http.get(Uri.parse(request1));
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 && response1.statusCode == 200) {
       final result = json.decode(response.body);
-      if (result['status'] == 'OK') {
+      final result1 = json.decode(response1.body);
+
+      if ((result['status'] == 'OK') && (result1['status'] == 'OK')) {
         //final address = result['result']['formatted_address'];
 
-        PlaceDetails pd = PlaceDetails('', [], [], false, 0, []);
+        //PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [],'');
 
         pd.address = result['result']['formatted_address'];
 
@@ -192,12 +208,35 @@ class PlaceApiProvider {
         pd.openingHours = hours.map((p) => p.toString()).toList();
         pd.rating = result['result']['rating'].toDouble();
         pd.periods = result['result']['opening_hours']['periods'];
+        pd.reviews = result['result']['reviews'];
+        pd.distance = result1['rows'][0]['elements'][0]['distance']['text'];
 
         return pd;
       }
       throw Exception(result['error message']);
     } else {
       throw Exception('Failed to find address');
+    }
+  }
+
+  Future<DistanceMatrix> getDistanceMatrix(
+      String placeId, double latitude, double longitude) async {
+    final request =
+        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken&units=imperial';
+
+    final response = await http.get(Uri.parse(request));
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        DistanceMatrix dm = DistanceMatrix('');
+        dm.distance = result['rows'][0]['elements'][0]['distance']['text'];
+
+        return dm;
+      }
+      throw Exception(result['error message']);
+    } else {
+      throw Exception('could not find distance');
     }
   }
 }

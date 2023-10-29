@@ -1,3 +1,5 @@
+//import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -14,17 +16,18 @@ class PlaceDetail extends StatefulWidget {
   final List<String> photos;
   final String openStatus;
   final List<String> openingHours;
+  final List<dynamic> reviews;
 
-  const PlaceDetail({
-    super.key,
-    this.placeId,
-    required this.name,
-    required this.address,
-    required this.photo_reference,
-    required this.photos,
-    required this.openStatus,
-    required this.openingHours,
-  });
+  const PlaceDetail(
+      {super.key,
+      this.placeId,
+      required this.name,
+      required this.address,
+      required this.photo_reference,
+      required this.photos,
+      required this.openStatus,
+      required this.openingHours,
+      required this.reviews});
 
   static bool inner = true;
   @override
@@ -115,7 +118,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                           fontSize: 12,
                                           color: Colors.red),
                                     ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 5),
                               Container(
                                   width: 400,
                                   height: 300,
@@ -144,13 +147,8 @@ class _PlaceDetailPageState extends State<PlaceDetail>
             Container(
               color: Colors.white,
               child: Padding(
-                padding: EdgeInsets.all(4),
+                padding: EdgeInsets.all(0),
                 child: Material(
-                    //child: Column(
-                    //crossAxisAlignment: CrossAxisAlignment.start,
-                    //children: <Widget>[
-                    //Text(widget.openStatus, style: commonTextStyle()),
-
                     child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,31 +232,100 @@ class _PlaceDetailPageState extends State<PlaceDetail>
               ),
             ),
 
-            const Text('wassup',
-                style: TextStyle(color: Colors.white, fontSize: 50)),
+            Container(
+                color: Colors.white,
+                child: ListView.builder(
+                  itemCount: widget.reviews.length,
+                  itemBuilder: (context, index) => Container(
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  '${widget.reviews[index]['author_name'] ?? 'N/A'}',
+                                  textAlign: TextAlign.left,
+                                  style: const TextStyle(
+                                      decoration: TextDecoration.none,
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.normal,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins')),
+                              Row(children: [
+                                Text(
+                                  '${widget.reviews[index]['rating']}',
+                                  style: ReviewTextStyle(),
+                                ),
+                                ...List.generate(5, (i) {
+                                  return Icon(
+                                    i < widget.reviews[index]['rating']
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Color.fromARGB(255, 255, 230, 9),
+                                  );
+                                }),
+                                const SizedBox(width: 10),
+                                Text(
+                                    '${widget.reviews[index]['relative_time_description']}',
+                                    style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                        fontStyle: FontStyle.normal,
+                                        fontWeight: FontWeight.normal,
+                                        fontFamily: 'Poppins')),
+                              ]),
+                              Text(
+                                '${widget.reviews[index]['text']}',
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontStyle: FontStyle.normal,
+                                    fontWeight: FontWeight.normal,
+                                    fontFamily: 'Poppins'),
+                              ),
+                            ])),
+                  ),
+                )),
             //const Text('photos'),
             Container(
                 color: Colors.white,
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2),
-                  itemCount: widget.photos.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Image.network(
-                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                            fit: BoxFit.cover,
-                            //centerSlice: Rect.,
-                          )),
-                      // onTap: () =>
-                      //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                    );
-                  },
-                ))
+                child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2),
+                      itemCount: widget.photos.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(1, 0, 1, 1),
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Image.network(
+                                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                fit: BoxFit.cover,
+                                //centerSlice: Rect.,
+                              )),
+                          // onTap: () =>
+                          //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                        );
+                      },
+                    )))
           ],
         ));
+  }
+
+  TextStyle ReviewTextStyle() {
+    return const TextStyle(
+        decoration: TextDecoration.none,
+        color: Colors.black,
+        fontSize: 14,
+        fontStyle: FontStyle.normal,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'Poppins');
   }
 }
