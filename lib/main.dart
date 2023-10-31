@@ -21,8 +21,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Poppins'),
-      home: Scaffold(backgroundColor: Colors.white, body: const MyHomePage()),
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+      ),
+      home: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: null,
+          body: const MyHomePage()),
     );
   }
 }
@@ -73,117 +78,122 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-          child: Column(children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
-          decoration: BoxDecoration(boxShadow: [
-            BoxShadow(
-                color: Color(0xff1D1617).withOpacity(0.11),
-                blurRadius: 40,
-                spreadRadius: 0.0)
-          ]),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextField(
-                controller: _controller,
-                readOnly: true,
-                onTap: () async {
-                  final sessionToken = const Uuid().v4();
-                  final result = await showSearch(
-                    context: context,
-                    delegate: AddressSearch(sessionToken),
-                  );
-                  if (result != null) {
-                    final placeDetails = await PlaceApiProvider(sessionToken)
-                        .getPlaceDetailFromId(result.placeId);
-                    lati = placeDetails.latitude;
-                    longi = placeDetails.longitude;
+    return Stack(
+      children: [
+        //backgroundColor: Colors.white,
+        SingleChildScrollView(
+            child: Column(children: <Widget>[
+          Container(
+            margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(
+                  color: Color(0xff1D1617).withOpacity(0.11),
+                  blurRadius: 40,
+                  spreadRadius: 0.0)
+            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  controller: _controller,
+                  readOnly: true,
+                  onTap: () async {
+                    final sessionToken = const Uuid().v4();
+                    final result = await showSearch(
+                      context: context,
+                      delegate: AddressSearch(sessionToken),
+                    );
+                    if (result != null) {
+                      final placeDetails = await PlaceApiProvider(sessionToken)
+                          .getPlaceDetailFromId(result.placeId);
+                      lati = placeDetails.latitude;
+                      longi = placeDetails.longitude;
+                      setState(() {
+                        _controller.text = result.description;
+                        showNearbyPlaces = true;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: locationText,
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 14),
+                      contentPadding: const EdgeInsets.all(15),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SvgPicture.asset('assets/icons/Search.svg'),
+                      ),
+                      suffixIcon: Container(
+                        width: 100,
+                        child: IntrinsicHeight(
+                            child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            const VerticalDivider(
+                              color: Colors.black,
+                              indent: 10,
+                              endIndent: 10,
+                              thickness: 0.1,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child:
+                                  SvgPicture.asset('assets/icons/Filter.svg'),
+                            )
+                          ],
+                        )),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none)),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                  onPressed: () async {
+                    updateLocationText();
+                    final loc = LocationService();
+                    Coordinates coord = await loc.getCurrentLocation();
+                    lati = coord.lat;
+                    longi = coord.long;
+
                     setState(() {
-                      _controller.text = result.description;
                       showNearbyPlaces = true;
                     });
-                  }
-                },
-                decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: locationText,
-                    hintStyle:
-                        const TextStyle(color: Colors.grey, fontSize: 14),
-                    contentPadding: const EdgeInsets.all(15),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SvgPicture.asset('assets/icons/Search.svg'),
-                    ),
-                    suffixIcon: Container(
-                      width: 100,
-                      child: IntrinsicHeight(
-                          child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          const VerticalDivider(
-                            color: Colors.black,
-                            indent: 10,
-                            endIndent: 10,
-                            thickness: 0.1,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SvgPicture.asset('assets/icons/Filter.svg'),
-                          )
-                        ],
-                      )),
-                    ),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none)),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  updateLocationText();
-                  final loc = LocationService();
-                  Coordinates coord = await loc.getCurrentLocation();
-                  lati = coord.lat;
-                  longi = coord.long;
-
-                  setState(() {
-                    showNearbyPlaces = true;
-                  });
-                },
-                child: const Text("Use your location",
-                    style: TextStyle(color: Colors.black)),
-              ),
-              Visibility(
-                  visible: showNearbyPlaces,
-                  //child: SingleChildScrollView(
-                  child: FutureBuilder<List<PlaceResponse>>(
-                    future: fetchNearbyPlaces(lati, longi),
-                    builder: (context, snapshot) =>
-                        snapshot.connectionState == ConnectionState.waiting
-                            ? const CircularProgressIndicator()
-                            : snapshot.hasError
-                                ? Text('Error: ${snapshot.error}')
-                                : snapshot.hasData
-                                    ? ListView.builder(
-                                        physics: NeverScrollableScrollPhysics(),
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) =>
-                                            PlaceListItem(
-                                                place: snapshot.data?[index]
-                                                    as PlaceResponse),
-                                        itemCount: snapshot.data?.length)
-                                    : const Text("no data found"),
-                  ))
-            ],
+                  },
+                  child: const Text("Use your location",
+                      style: TextStyle(color: Colors.black)),
+                ),
+                Visibility(
+                    visible: showNearbyPlaces,
+                    //child: SingleChildScrollView(
+                    child: FutureBuilder<List<PlaceResponse>>(
+                      future: fetchNearbyPlaces(lati, longi),
+                      builder: (context, snapshot) =>
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? const CircularProgressIndicator()
+                              : snapshot.hasError
+                                  ? Text('Error: ${snapshot.error}')
+                                  : snapshot.hasData
+                                      ? ListView.builder(
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) =>
+                                              PlaceListItem(
+                                                  place: snapshot.data?[index]
+                                                      as PlaceResponse),
+                                          itemCount: snapshot.data?.length)
+                                      : const Text("no data found"),
+                    ))
+              ],
+            ),
           ),
-        ),
-      ])),
+        ]))
+      ],
     );
   }
 }
@@ -198,8 +208,6 @@ class PlaceListItem extends StatelessWidget {
   Future<PlaceDetails> fetchPlaceDetails(String p) async {
     final PlaceApi = new PlaceApiProvider(sessionToken);
     PlaceDetails PD = await PlaceApi.getAddress(p, lati, longi);
-    DistanceMatrix DM = await PlaceApi.getDistanceMatrix(p, lati, longi);
-
     return PD;
   }
 
@@ -252,12 +260,29 @@ class PlaceListItem extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('$a $test',
-                                        style: const TextStyle(
-                                            fontStyle: FontStyle.italic,
-                                            fontSize: 14,
-                                            color: Colors.red)),
+                                    a == 'Open'
+                                        ? test == '24 hours'
+                                            ? Text('$a $test',
+                                                style: const TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                    fontSize: 14,
+                                                    color: Colors.green,
+                                                    fontFamily: 'Roboto'))
+                                            : Text('$a - $test',
+                                                style: const TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                    fontSize: 14,
+                                                    color: Colors.green,
+                                                    fontFamily: 'Roboto'))
+                                        : Text('$a - $test',
+                                            style: const TextStyle(
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 14,
+                                                color: Colors.red,
+                                                fontFamily: 'Roboto')),
+                                    const Spacer(),
                                     Text(placedetails!.distance),
+                                    const SizedBox(width: 20),
                                     Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
@@ -358,7 +383,7 @@ class PlaceListItem extends StatelessWidget {
         List<String> times = findOpenAndCloseTime(n, list);
 
         if (combinedTime < int.parse(times[0])) {
-          String day = returnsDay(n);
+          //String day = returnsDay(n);
           String formatted_time = formatTime(times[0]);
           return 'Opens $formatted_time';
         }
@@ -385,10 +410,15 @@ class PlaceListItem extends StatelessWidget {
     }
 
     if (openstatus) {
-      List<String> times = findOpenAndCloseTime(n, list);
+      var times = findOpenAndCloseTime(n, list);
+      if (times is List<String>) {
+        String formatted_time = formatTime(times[1]);
+        return 'Closes $formatted_time';
+      }
 
-      String formatted_time = formatTime(times[1]);
-      return 'Closes $formatted_time';
+      if (times is String) {
+        return '$times';
+      }
     } else {}
 
     return '';
@@ -425,73 +455,77 @@ class PlaceListItem extends StatelessWidget {
     }
   }
 
-  List<String> findOpenAndCloseTime(num x, List<dynamic> list) {
+  dynamic findOpenAndCloseTime(num x, List<dynamic> list) {
     List<String> openAndCloseTime = [];
     for (var element in list) {
-      if (x == element['close']['day']) {
-        String openTime = element['open']['time'];
-        String closeTime = element['close']['time'];
-        openAndCloseTime.add(openTime);
-        openAndCloseTime.add(closeTime);
-        return openAndCloseTime;
+      if (element['close'] != null) {
+        if (x == element['close']['day']) {
+          String openTime = element['open']['time'];
+          String closeTime = element['close']['time'];
+          openAndCloseTime.add(openTime);
+          openAndCloseTime.add(closeTime);
+          return openAndCloseTime;
+        }
+      } else if (element['close'] == null) {
+        return '24 hours';
       }
     }
     throw Exception('Could not find');
   }
+}
 
-  String formatTime(String x) {
-    String result = (int.parse(x) / 100).toStringAsFixed(2);
-    List<String> hourAndMinutes = result.split('.');
-    List<String> hourSplit =
-        ((int.parse(hourAndMinutes[0]) / 10).toStringAsFixed(1)).split('.');
-    if (hourAndMinutes[1] == "00") {
-      if (hourAndMinutes[0] != "00") {
-        if (hourSplit[0] == '0') {
-          return '${hourSplit[1]} AM';
+String formatTime(String x) {
+  String result = (int.parse(x) / 100).toStringAsFixed(2);
+  List<String> hourAndMinutes = result.split('.');
+  List<String> hourSplit =
+      ((int.parse(hourAndMinutes[0]) / 10).toStringAsFixed(1)).split('.');
+  if (hourAndMinutes[1] == "00") {
+    if (hourAndMinutes[0] != "00") {
+      if (hourSplit[0] == '0') {
+        return '${hourSplit[1]} AM';
+      }
+      if (hourSplit[0] != '0') {
+        if (int.parse(hourAndMinutes[0]) < 12) {
+          return '${hourAndMinutes[0]} AM';
         }
-        if (hourSplit[0] != '0') {
-          if (int.parse(hourAndMinutes[0]) < 12) {
-            return '${hourAndMinutes[0]} AM';
+        if (int.parse(hourAndMinutes[0]) >= 12) {
+          if (int.parse(hourAndMinutes[0]) > 12) {
+            return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])} PM';
+          } else if (int.parse(hourAndMinutes[0]) == 12) {
+            return '${hourAndMinutes[0]} PM';
           }
-          if (int.parse(hourAndMinutes[0]) >= 12) {
-            if (int.parse(hourAndMinutes[0]) > 12) {
-              return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])} PM';
-            } else if (int.parse(hourAndMinutes[0]) == 12) {
-              return '${hourAndMinutes[0]} PM';
-            }
-          }
-        }
-
-        if (hourAndMinutes[0] == '00') {
-          return '12 AM';
         }
       }
-    }
 
-    if (hourAndMinutes[1] != '00') {
-      if (hourAndMinutes[0] != '00') {
-        if (hourSplit[0] == '0') {
-          return '${hourSplit[1]}:${hourAndMinutes[1]} AM';
-        } else if (hourSplit[0] != '0') {
-          if (int.parse(hourAndMinutes[0]) < 12) {
-            return '${hourAndMinutes[0]}:${hourAndMinutes[1]} AM';
-          } else if (int.parse(hourAndMinutes[0]) >= 12) {
-            if (int.parse(hourAndMinutes[0]) > 12) {
-              return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])}:${hourAndMinutes[1]} PM';
-            } else if (int.parse(hourAndMinutes[0]) == 12) {
-              return '${hourAndMinutes[0]}:${hourAndMinutes[1]} PM';
-            }
-          }
-        }
-      } else if (hourAndMinutes[0] == '00') {
-        return '12:${hourAndMinutes[1]} AM';
+      if (hourAndMinutes[0] == '00') {
+        return '12 AM';
       }
     }
-    return '';
   }
 
-  String convertTwentyFourHourToTwelveHour(String x) {
-    int y = int.parse(x) - 12;
-    return y.toString();
+  if (hourAndMinutes[1] != '00') {
+    if (hourAndMinutes[0] != '00') {
+      if (hourSplit[0] == '0') {
+        return '${hourSplit[1]}:${hourAndMinutes[1]} AM';
+      } else if (hourSplit[0] != '0') {
+        if (int.parse(hourAndMinutes[0]) < 12) {
+          return '${hourAndMinutes[0]}:${hourAndMinutes[1]} AM';
+        } else if (int.parse(hourAndMinutes[0]) >= 12) {
+          if (int.parse(hourAndMinutes[0]) > 12) {
+            return '${convertTwentyFourHourToTwelveHour(hourAndMinutes[0])}:${hourAndMinutes[1]} PM';
+          } else if (int.parse(hourAndMinutes[0]) == 12) {
+            return '${hourAndMinutes[0]}:${hourAndMinutes[1]} PM';
+          }
+        }
+      }
+    } else if (hourAndMinutes[0] == '00') {
+      return '12:${hourAndMinutes[1]} AM';
+    }
   }
+  return '';
+}
+
+String convertTwentyFourHourToTwelveHour(String x) {
+  int y = int.parse(x) - 12;
+  return y.toString();
 }
