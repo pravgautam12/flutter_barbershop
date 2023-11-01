@@ -163,23 +163,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           borderSide: BorderSide.none)),
                 ),
                 const SizedBox(height: 10),
-                ElevatedButton(
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  onPressed: () async {
-                    updateLocationText();
-                    final loc = LocationService();
-                    Coordinates coord = await loc.getCurrentLocation();
-                    lati = coord.lat;
-                    longi = coord.long;
-
-                    setState(() {
-                      showNearbyPlaces = true;
-                    });
-                  },
-                  child: const Text("Use your location",
-                      style: TextStyle(color: Colors.black)),
-                ),
                 Visibility(
                     visible: showNearbyPlaces,
                     //child: SingleChildScrollView(
