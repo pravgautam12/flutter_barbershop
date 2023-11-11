@@ -77,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<List<PlaceResponse>> fetchNearbyPlaces(
       double latitude, double longitude) async {
     final sessionToken = const Uuid().v4();
+    //final places = await PlaceApiProvider(sessionToken).getNearbyPlaces(latitude, longitude);
     final places = await PlaceApiProvider(sessionToken)
         .getNearbyPlaces(latitude, longitude);
     return places;
@@ -207,8 +208,6 @@ class PlaceListItem extends StatelessWidget {
     return PD;
   }
 
-  String a = '';
-
   PlaceDetails? placedetails;
   @override
   Widget build(BuildContext context) {
@@ -242,11 +241,20 @@ class PlaceListItem extends StatelessWidget {
                           placedetails = snapshot.data!;
                           List<String> address =
                               placedetails!.address.split(',');
-                          //return Text(placedetails0!.address);
-                          placedetails!.openStatus ? a = 'Open' : a = 'Closed';
 
-                          String test = NextOpenOrClose(
-                              placedetails!.periods, placedetails!.openStatus);
+                          bool a;
+                          if (placedetails!.openStatus == 'Open') {
+                            a = true;
+                          }
+                          if (placedetails!.openStatus == 'Closed') {
+                            a = false;
+                          } else {}
+
+                          // String test = NextOpenOrClose(
+                          //     placedetails!.periods, a);
+
+                          //removed periods from the call, kept openStatus
+                          String test = '';
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,36 +264,51 @@ class PlaceListItem extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    a == 'Open'
+                                    placedetails!.openStatus == 'Open'
                                         ? test == '24 hours'
-                                            ? Text('$a $test',
+                                            ? Text(
+                                                '${placedetails!.openStatus} $test',
                                                 style: const TextStyle(
                                                     fontStyle: FontStyle.italic,
                                                     fontSize: 14,
                                                     color: Colors.green,
                                                     fontFamily: 'Roboto'))
-                                            : Text('$a - $test',
+                                            : Text(
+                                                '${placedetails!.openStatus} - $test',
                                                 style: const TextStyle(
                                                     fontStyle: FontStyle.italic,
                                                     fontSize: 14,
                                                     color: Colors.green,
                                                     fontFamily: 'Roboto'))
-                                        : Text('$a - $test',
-                                            style: const TextStyle(
-                                                fontStyle: FontStyle.italic,
-                                                fontSize: 14,
-                                                color: Colors.red,
-                                                fontFamily: 'Roboto')),
+                                        : placedetails!.openStatus == 'Closed'
+                                            ? Text(
+                                                '${placedetails!.openStatus} - $test',
+                                                style: const TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                    fontSize: 14,
+                                                    color: Colors.red,
+                                                    fontFamily: 'Roboto'))
+                                            : placedetails!.openStatus ==
+                                                    'data not available'
+                                                ? Text(' $test',
+                                                    style: const TextStyle(
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                      fontSize: 14,
+                                                      color: Colors.green,
+                                                    ))
+                                                : Text(''),
                                     const Spacer(),
                                     Text(placedetails!.distance),
                                     const SizedBox(width: 20),
-                                    Row(
+                                    const Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
                                         children: [
-                                          Text(
-                                            placedetails!.rating.toString(),
-                                          ),
+                                          // Text(
+                                          //   placedetails!.rating.toString(),
+                                          // ),
+                                          Text('5.0'),
                                           Icon(Icons.star),
                                         ])
                                   ])
@@ -320,7 +343,7 @@ class PlaceListItem extends StatelessWidget {
                     address: placedetails!.address,
                     photo_reference: place!.photoReference,
                     photos: placedetails!.photos,
-                    openStatus: a,
+                    openStatus: placedetails!.openStatus,
                     openingHours: placedetails!.openingHours,
                     reviews: placedetails!.reviews,
                   )),

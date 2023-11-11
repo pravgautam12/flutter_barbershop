@@ -18,16 +18,17 @@ class PlaceDetail extends StatefulWidget {
   final List<String> openingHours;
   final List<dynamic> reviews;
 
-  const PlaceDetail(
-      {super.key,
-      this.placeId,
-      required this.name,
-      required this.address,
-      required this.photo_reference,
-      required this.photos,
-      required this.openStatus,
-      required this.openingHours,
-      required this.reviews});
+  const PlaceDetail({
+    super.key,
+    this.placeId,
+    this.name = '',
+    this.address = '',
+    this.photo_reference = '',
+    this.photos = const [''],
+    this.openStatus = '',
+    this.openingHours = const [''],
+    this.reviews = const [],
+  });
 
   static bool inner = true;
   @override
