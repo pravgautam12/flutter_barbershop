@@ -64,15 +64,15 @@ class LocationService {
     }
   }
 
-  LocationService() {
-    checkServiceAndPermissionStatus();
-    location.onLocationChanged.listen((LocationData currentLocation) {
-      if (currentLocation != null) {
-        _locationController.add(Coordinates(
-          lat: currentLocation.latitude as double,
-          long: currentLocation.longitude as double,
-        ));
-      }
-    });
-  }
+  // LocationService() {
+  //   checkServiceAndPermissionStatus();
+  //   location.onLocationChanged.listen((LocationData currentLocation) {
+  //     if (currentLocation != null) {
+  //       _locationController.add(Coordinates(
+  //         lat: currentLocation.latitude as double,
+  //         long: currentLocation.longitude as double,
+  //       ));
+  //     }
+  //   });
+  // }
 }

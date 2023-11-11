@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_barbershop/models/shared_pref_cache_data.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -33,7 +34,7 @@ class PlaceDetails {
   String address;
   List<String> photos;
   List<String> openingHours;
-  bool openStatus;
+  String openStatus;
   double rating;
   List<dynamic> periods;
   List<dynamic> reviews;
@@ -79,7 +80,9 @@ class Suggestion {
 
 class PlaceApiProvider {
   final client = HttpClient();
-
+  MySharedPreferences mySharedPreferences = MySharedPreferences();
+  MySharedPreferences mySharedPreferences1 = MySharedPreferences();
+  MySharedPreferences mySharedPreferences2 = MySharedPreferences();
   PlaceApiProvider(this.sessionToken);
 
   final sessionToken;
@@ -97,6 +100,7 @@ class PlaceApiProvider {
 
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
+
       if (result['status'] == 'OK') {
         // compose suggestions in a list
         return result['predictions']
@@ -149,6 +153,26 @@ class PlaceApiProvider {
     }
   }
 
+  Future<List<PlaceResponse>> cacheData(double l, double g) async {
+    try {
+      final jsonData = await mySharedPreferences.getDataIfNotExpired();
+      if (jsonData != null) {
+        final decodedData = json.decode(jsonData);
+        if (decodedData['status'] == 'OK') {
+          return decodedData['results']
+              .map<PlaceResponse>((p) => PlaceResponse(
+                  p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+              .toList();
+        }
+        return json.decode(jsonData);
+      } else {
+        return getNearbyPlaces(l, g);
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   Future<List<PlaceResponse>> getNearbyPlaces(double l, double g) async {
     const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
 
@@ -159,6 +183,10 @@ class PlaceApiProvider {
 
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
+
+      // final isSaved = await mySharedPreferences.saveDataWithExpiration(
+      //     response.body, const Duration(days: 10));
+
       if (result['status'] == 'OK') {
         return result['results']
             .map<PlaceResponse>((p) => PlaceResponse(
@@ -171,12 +199,59 @@ class PlaceApiProvider {
     }
   }
 
+  // Future<PlaceDetails> cacheDataPlaceDetails(
+  //     String placeId, double latitude, double longitude) async {
+  //   PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [], '');
+
+  //   try {
+  //     final jsonData1 = await mySharedPreferences1.getDataIfNotExpired();
+  //     final jsonData2 = await mySharedPreferences2.getDataIfNotExpired();
+  //     if (jsonData1 != null) {
+  //       final decodedData = json.decode(jsonData1);
+  //       if (decodedData['status'] == 'OK') {
+  //         pd.address = decodedData['result']['formatted_address'];
+
+  //         final components = decodedData['result']['photos'];
+  //         List<String> pictures = [];
+
+  //         components.forEach((c) {
+  //           pictures.add(c['photo_reference']);
+  //         });
+
+  //         pd.photos = pictures;
+  //         pd.openStatus = decodedData['result']['opening_hours']['open_now'];
+  //         List<dynamic> hours =
+  //             decodedData['result']['opening_hours']['weekday_text'];
+  //         pd.openingHours = hours.map((p) => p.toString()).toList();
+  //         pd.rating = decodedData['result']['rating'].toDouble();
+  //         pd.periods = decodedData['result']['opening_hours']['periods'];
+  //         pd.reviews = decodedData['result']['reviews'];
+  //       }
+  //     }
+
+  //     if (jsonData2 != null) {
+  //       final decodedData1 = json.decode(jsonData2);
+  //       pd.distance =
+  //           decodedData1['rows'][0]['elements'][0]['distance']['text'];
+  //     } else {
+  //       return getAddress(placeId, latitude, longitude);
+  //     }
+  //     return pd;
+  //   } catch (error) {
+  //     throw Exception(error);
+  //   }
+  // }
+
   Future<PlaceDetails> getAddress(
       String placeId, double latitude, double longitude) async {
-    PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [], '');
+    PlaceDetails pd = PlaceDetails('', [], [], '', 0, [], [], '');
 
+    // final request =
+    //     'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating,reviews&key=$apiKey&sessiontoken=$sessionToken';
+
+    // the one below is for reducing api calls
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating,reviews&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=opening_hours/open_now&key=$apiKey&sessiontoken=$sessionToken';
 
     final request1 =
         'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken&units=imperial';
@@ -188,27 +263,50 @@ class PlaceApiProvider {
       final result = json.decode(response.body);
       final result1 = json.decode(response1.body);
 
+      // final isSaved = await mySharedPreferences1.saveDataWithExpiration(
+      //     response.body, const Duration(days: 10));
+
+      // final isSaved1 = await mySharedPreferences2.saveDataWithExpiration(
+      //     response1.body, const Duration(days: 10));
+
       if ((result['status'] == 'OK') && (result1['status'] == 'OK')) {
         //final address = result['result']['formatted_address'];
 
         //PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [],'');
 
-        pd.address = result['result']['formatted_address'];
+        // pd.address = result['result']['formatted_address'];
+        pd.address = 'Chip N Dale';
 
-        final components = result['result']['photos'];
-        List<String> pictures = [];
+        // final components = result['result']['photos'];
+        // List<String> pictures = [];
 
-        components.forEach((c) {
-          pictures.add(c['photo_reference']);
-        });
+        // components.forEach((c) {
+        //   pictures.add(c['photo_reference']);
+        // });
 
-        pd.photos = pictures;
-        pd.openStatus = result['result']['opening_hours']['open_now'];
-        List<dynamic> hours = result['result']['opening_hours']['weekday_text'];
-        pd.openingHours = hours.map((p) => p.toString()).toList();
-        pd.rating = result['result']['rating'].toDouble();
-        pd.periods = result['result']['opening_hours']['periods'];
-        pd.reviews = result['result']['reviews'];
+        // pd.photos = pictures;
+
+        pd.photos = [];
+        if (result['result'].containsKey('opening_hours')) {
+          if (result['result']['opening_hours'].containsKey('open_now')) {
+            if (result['result']['opening_hours']['open_now'] == true) {
+              pd.openStatus = 'Open';
+            }
+            if (result['result']['opening_hours']['open_now'] == false) {
+              pd.openStatus = 'Closed';
+            }
+          }
+        } else {
+          pd.openStatus = 'data not available';
+        }
+        // List<dynamic> hours = result['result']['opening_hours']['weekday_text'];
+        // pd.openingHours = hours.map((p) => p.toString()).toList();
+        pd.openingHours = [];
+        // pd.rating = result['result']['rating'].toDouble();
+        pd.rating = 5.0;
+        // pd.periods = result['result']['opening_hours']['periods'];
+        pd.periods = [];
+        pd.reviews = [];
         pd.distance = result1['rows'][0]['elements'][0]['distance']['text'];
 
         return pd;
