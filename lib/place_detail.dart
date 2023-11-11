@@ -18,16 +18,17 @@ class PlaceDetail extends StatefulWidget {
   final List<String> openingHours;
   final List<dynamic> reviews;
 
-  const PlaceDetail(
-      {super.key,
-      this.placeId,
-      required this.name,
-      required this.address,
-      required this.photo_reference,
-      required this.photos,
-      required this.openStatus,
-      required this.openingHours,
-      required this.reviews});
+  const PlaceDetail({
+    super.key,
+    this.placeId,
+    this.name = '',
+    this.address = '',
+    this.photo_reference = '',
+    this.photos = const [''],
+    this.openStatus = '',
+    this.openingHours = const [''],
+    this.reviews = const [],
+  });
 
   static bool inner = true;
   @override
@@ -63,11 +64,17 @@ class _PlaceDetailPageState extends State<PlaceDetail>
 
   @override
   Widget build(BuildContext context) {
-    //TabController _tabController = TabController(length: 2, vsync: this);
     return NestedScrollView(
         headerSliverBuilder: (context, value) {
           return [
             SliverAppBar(
+                leading: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
+                        child: Icon(color: Colors.blue, Icons.arrow_back_ios))),
                 pinned: true,
                 //snap: true,
                 floating: true,
@@ -78,11 +85,11 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                       height: 80,
                       color: Colors.white,
                       child: Padding(
-                          padding: EdgeInsets.all(4),
+                          padding: EdgeInsets.all(10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 70),
                               Text(
                                 widget.name,
                                 style: const TextStyle(
@@ -268,7 +275,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                 const SizedBox(width: 10),
                                 Text(
                                     '${widget.reviews[index]['relative_time_description']}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         decoration: TextDecoration.none,
                                         color: Colors.black,
                                         fontSize: 12,
@@ -278,7 +285,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                               ]),
                               Text(
                                 '${widget.reviews[index]['text']}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     decoration: TextDecoration.none,
                                     color: Colors.black,
                                     fontSize: 14,
