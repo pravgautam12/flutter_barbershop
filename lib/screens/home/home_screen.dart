@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -10,6 +12,13 @@ import 'package:intl/intl.dart';
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
   //final String title;
+
+  static const String routeName = '/';
+
+  static Route route() {
+    return MaterialPageRoute(
+        builder: (_) => MyHomePage(), settings: RouteSettings(name: routeName));
+  }
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -70,105 +79,104 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         //backgroundColor: Colors.white,
         SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              Container(
-                margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                        color: const Color(0xff1D1617).withOpacity(0.11),
-                        blurRadius: 40,
-                        spreadRadius: 0.0)
-                  ]),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    TextField(
-                      controller: _controller,
-                      readOnly: true,
-                      onTap: () async {
-                        final sessionToken = const Uuid().v4();
-                        final result = await showSearch(
-                          context: context,
-                          delegate: AddressSearch(sessionToken,
-                              callBackFunc: callBackFunc),
-                        );
-                        if (result != null) {
-                          final placeDetails = await PlaceApiProvider(sessionToken)
-                              .getPlaceDetailFromId(result.placeId);
-                          lati = placeDetails.latitude;
-                          longi = placeDetails.longitude;
-                          setState(() {
-                            _controller.text = result.description;
-                            showNearbyPlaces = true;
-                          });
-                        }
-                      },
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: locationText,
-                          hintStyle:
-                              const TextStyle(color: Colors.grey, fontSize: 14),
-                          contentPadding: const EdgeInsets.all(15),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: SvgPicture.asset('assets/icons/Search.svg'),
-                          ),
-                          suffixIcon: Container(
-                            width: 100,
-                            child: IntrinsicHeight(
-                                child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                const VerticalDivider(
-                                  color: Colors.black,
-                                  indent: 10,
-                                  endIndent: 10,
-                                  thickness: 0.1,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child:
-                                      SvgPicture.asset('assets/icons/Filter.svg'),
-                                )
-                              ],
-                            )),
-                          ),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide.none)),
-                    ),
-                    const SizedBox(height: 10),
-                    Visibility(
-                        visible: showNearbyPlaces,
-                        //child: SingleChildScrollView(
-                        child: FutureBuilder<List<PlaceResponse>>(
-                          future: fetchNearbyPlaces(lati, longi),
-                          builder: (context, snapshot) =>
-                              snapshot.connectionState == ConnectionState.waiting
-                                  ? const CircularProgressIndicator()
-                                  : snapshot.hasError
-                                      ? Text('Error: ${snapshot.error}')
-                                      : snapshot.hasData
-                                          ? ListView.builder(
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              shrinkWrap: true,
-                                              itemBuilder: (context, index) =>
-                                                  PlaceListItem(
-                                                      place: snapshot.data?[index]
-                                                          as PlaceResponse),
-                                              itemCount: snapshot.data?.length)
-                                          : const Text("no data found"),
-                        ))
-                  ],
+            child: Column(children: <Widget>[
+          Container(
+            margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(
+                  color: const Color(0xff1D1617).withOpacity(0.11),
+                  blurRadius: 40,
+                  spreadRadius: 0.0)
+            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  controller: _controller,
+                  readOnly: true,
+                  onTap: () async {
+                    final sessionToken = const Uuid().v4();
+                    final result = await showSearch(
+                      context: context,
+                      delegate: AddressSearch(sessionToken,
+                          callBackFunc: callBackFunc),
+                    );
+                    if (result != null) {
+                      final placeDetails = await PlaceApiProvider(sessionToken)
+                          .getPlaceDetailFromId(result.placeId);
+                      lati = placeDetails.latitude;
+                      longi = placeDetails.longitude;
+                      setState(() {
+                        _controller.text = result.description;
+                        showNearbyPlaces = true;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: locationText,
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 14),
+                      contentPadding: const EdgeInsets.all(15),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SvgPicture.asset('assets/icons/Search.svg'),
+                      ),
+                      suffixIcon: GestureDetector(
+                        onTap: () => {Navigator.pushNamed(context, '/filter')},
+                        child: Container(
+                          width: 100,
+                          child: IntrinsicHeight(
+                              child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const VerticalDivider(
+                                color: Colors.black,
+                                indent: 10,
+                                endIndent: 10,
+                                thickness: 0.1,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child:
+                                    SvgPicture.asset('assets/icons/Filter.svg'),
+                              )
+                            ],
+                          )),
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none)),
                 ),
-              ),
-          ]
-        )
-        )
+                const SizedBox(height: 10),
+                Visibility(
+                    visible: showNearbyPlaces,
+                    //child: SingleChildScrollView(
+                    child: FutureBuilder<List<PlaceResponse>>(
+                      future: fetchNearbyPlaces(lati, longi),
+                      builder: (context, snapshot) =>
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? const CircularProgressIndicator()
+                              : snapshot.hasError
+                                  ? Text('Error: ${snapshot.error}')
+                                  : snapshot.hasData
+                                      ? ListView.builder(
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) =>
+                                              PlaceListItem(
+                                                  place: snapshot.data?[index]
+                                                      as PlaceResponse),
+                                          itemCount: snapshot.data?.length)
+                                      : const Text("no data found"),
+                    ))
+              ],
+            ),
+          ),
+        ]))
       ],
     );
   }
