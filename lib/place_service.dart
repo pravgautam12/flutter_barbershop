@@ -39,9 +39,10 @@ class PlaceDetails {
   List<dynamic> periods;
   List<dynamic> reviews;
   String distance;
+  String phoneNumber;
 
   PlaceDetails(this.address, this.photos, this.openingHours, this.openStatus,
-      this.rating, this.periods, this.reviews, this.distance);
+      this.rating, this.periods, this.reviews, this.distance, this.phoneNumber);
 }
 
 class PlaceResponse {
@@ -244,10 +245,10 @@ class PlaceApiProvider {
 
   Future<PlaceDetails> getAddress(
       String placeId, double latitude, double longitude) async {
-    PlaceDetails pd = PlaceDetails('', [], [], '', 0, [], [], '');
+    PlaceDetails pd = PlaceDetails('', [], [], '', 0, [], [], '', '');
 
     // final request =
-    //     'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,photos/photo_reference,opening_hours,rating,reviews&key=$apiKey&sessiontoken=$sessionToken';
+    //     'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=formatted_address,formatted_phone_number,photos/photo_reference,opening_hours,rating,reviews&key=$apiKey&sessiontoken=$sessionToken';
 
     // the one below is for reducing api calls
     final request =
@@ -275,7 +276,7 @@ class PlaceApiProvider {
         //PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [],'');
 
         // pd.address = result['result']['formatted_address'];
-        pd.address = 'Chip N Dale';
+        pd.address = '1701 Chip-N-Dale Drive, Arlington, TX 76012';
 
         // final components = result['result']['photos'];
         // List<String> pictures = [];
@@ -297,7 +298,7 @@ class PlaceApiProvider {
             }
           }
         } else {
-          pd.openStatus = 'data not available';
+          pd.openStatus = 'Hours unavailable';
         }
         // List<dynamic> hours = result['result']['opening_hours']['weekday_text'];
         // pd.openingHours = hours.map((p) => p.toString()).toList();
@@ -307,6 +308,9 @@ class PlaceApiProvider {
         // pd.periods = result['result']['opening_hours']['periods'];
         pd.periods = [];
         pd.reviews = [];
+        //pd.phoneNumber = result['result']['formatted_phone_number'];
+
+        pd.phoneNumber = '';
         pd.distance = result1['rows'][0]['elements'][0]['distance']['text'];
 
         return pd;

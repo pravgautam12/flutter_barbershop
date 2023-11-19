@@ -6,6 +6,7 @@ import 'package:flutter_barbershop/location.dart';
 import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -289,7 +290,7 @@ class PlaceListItem extends StatelessWidget {
                                                     color: Colors.red,
                                                     fontFamily: 'Roboto'))
                                             : placedetails!.openStatus ==
-                                                    'data not available'
+                                                    'Hours unavailable'
                                                 ? Text(' $test',
                                                     style: const TextStyle(
                                                       fontStyle:
@@ -346,6 +347,7 @@ class PlaceListItem extends StatelessWidget {
                     openStatus: placedetails!.openStatus,
                     openingHours: placedetails!.openingHours,
                     reviews: placedetails!.reviews,
+                    phoneNumber: placedetails!.phoneNumber,
                   )),
         );
       }),
