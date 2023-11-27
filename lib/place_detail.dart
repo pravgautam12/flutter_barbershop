@@ -1,5 +1,7 @@
 //import 'dart:html';
 
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -29,6 +31,14 @@ class PlaceDetail extends StatefulWidget {
     this.openingHours = const [''],
     this.reviews = const [],
   });
+
+  static const String routeName = '/place-detail';
+
+  static Route route() {
+    return MaterialPageRoute(
+        builder: (_) => PlaceDetail(), 
+        settings: RouteSettings(name: routeName));
+  }
 
   static bool inner = true;
   @override
@@ -74,7 +84,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                     },
                     child: const Padding(
                         padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
-                        child: Icon(color: Colors.blue, Icons.arrow_back_ios))),
+                        child: Icon(color: Colors.grey, Icons.arrow_back_ios))),
                 pinned: true,
                 //snap: true,
                 floating: true,

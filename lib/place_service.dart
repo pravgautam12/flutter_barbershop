@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_barbershop/models/models.dart';
 import 'package:flutter_barbershop/models/shared_pref_cache_data.dart';
-
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_barbershop/blocs/filters/filters_bloc.dart';
 
 const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
 
@@ -153,31 +153,42 @@ class PlaceApiProvider {
     }
   }
 
-  Future<List<PlaceResponse>> cacheData(double l, double g) async {
-    try {
-      final jsonData = await mySharedPreferences.getDataIfNotExpired();
-      if (jsonData != null) {
-        final decodedData = json.decode(jsonData);
-        if (decodedData['status'] == 'OK') {
-          return decodedData['results']
-              .map<PlaceResponse>((p) => PlaceResponse(
-                  p['name'], p['place_id'], p['photos'][0]['photo_reference']))
-              .toList();
-        }
-        return json.decode(jsonData);
-      } else {
-        return getNearbyPlaces(l, g);
+  // Future<List<PlaceResponse>> cacheData(double l, double g) async {
+  //   try {
+  //     final jsonData = await mySharedPreferences.getDataIfNotExpired();
+  //     if (jsonData != null) {
+  //       final decodedData = json.decode(jsonData);
+  //       if (decodedData['status'] == 'OK') {
+  //         return decodedData['results']
+  //             .map<PlaceResponse>((p) => PlaceResponse(
+  //                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+  //             .toList();
+  //       }
+  //       return json.decode(jsonData);
+  //     } else {
+  //       return getNearbyPlaces(l, g);
+  //     }
+  //   } catch (error) {
+  //     throw Exception(error);
+  //   }
+  // }
+
+  Future<List<PlaceResponse>> getNearbyPlaces(
+      double l, double g, FiltersState filterstate) async {
+    int radius = 10000;
+    if (filterstate is FiltersLoaded) {
+      try {
+        var distanceFilter = filterstate.filter.distanceFilters
+            .firstWhere((x) => x.value == true);
+        radius = distanceFilter.distanceObj.value;
+      } 
+      catch (e) {
+        radius = 10000;
       }
-    } catch (error) {
-      throw Exception(error);
     }
-  }
-
-  Future<List<PlaceResponse>> getNearbyPlaces(double l, double g) async {
     const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
-
     final request =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=$radius&type=salons&key=$apiKey&sessiontoken=$sessionToken';
 
     final response = await http.get(Uri.parse(request));
 

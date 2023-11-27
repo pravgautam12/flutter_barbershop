@@ -1,0 +1,4 @@
+BLoC design pattern: 
+BLoC is a state management library that lets us separate UI from the business logic. The UI will send events 
+to the BLoC which will trigger state changes and as the state changes, the BLoC will communicate with the data 
+repository. Once it gets a response, it will emit a new state that in turn will update the UI. 
