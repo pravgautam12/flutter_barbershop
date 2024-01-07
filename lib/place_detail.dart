@@ -1,8 +1,18 @@
 //import 'dart:html';
 
+import 'dart:io';
+
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:uuid/uuid.dart';
+import 'package:flutter_barbershop/address_search.dart';
+import 'package:flutter_barbershop/place_service.dart';
+import 'package:flutter_barbershop/location.dart';
+import 'package:flutter_barbershop/main.dart';
+import 'package:flutter_barbershop/models/constants.dart';
 
 class PlaceDetail extends StatefulWidget {
   final String? placeId;
@@ -13,6 +23,7 @@ class PlaceDetail extends StatefulWidget {
   final String openStatus;
   final List<String> openingHours;
   final List<dynamic> reviews;
+  final String phoneNumber;
 
   const PlaceDetail({
     super.key,
@@ -24,6 +35,7 @@ class PlaceDetail extends StatefulWidget {
     this.openStatus = '',
     this.openingHours = const [''],
     this.reviews = const [],
+    this.phoneNumber = '',
   });
 
   static const String routeName = '/place-detail';
@@ -42,6 +54,7 @@ class PlaceDetail extends StatefulWidget {
 class _PlaceDetailPageState extends State<PlaceDetail>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  bool _hasCallSupport = false;
   //bool _customTileExpanded = false;
   final ExpansionTileController controller = ExpansionTileController();
 
@@ -57,8 +70,22 @@ class _PlaceDetailPageState extends State<PlaceDetail>
     _tabController.dispose();
   }
 
+  @override
+  Future<bool> canPhoneCallBeMade(String schemeType, String number) async {
+    return await canLaunchUrl(Uri(scheme: schemeType, path: number));
+  }
+
+  @override
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    await launchUrl(launchUri);
+  }
+
   TextStyle commonTextStyle() {
-    return TextStyle(
+    return const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.normal,
         color: Colors.black,
@@ -82,7 +109,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                 pinned: true,
                 //snap: true,
                 floating: true,
-                expandedHeight: 500,
+                expandedHeight: 600,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Container(
@@ -105,7 +132,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                               ),
                               Divider(thickness: 3),
                               Text(
-                                widget.address,
+                                widget.address.split(',')[0],
                                 style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.normal,
@@ -130,6 +157,10 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                           color: Colors.red),
                                     ),
                               const SizedBox(height: 5),
+                              Row(children: [
+                                callButton(),
+                                directionsButton(),
+                              ]),
                               Container(
                                   width: 400,
                                   height: 300,
@@ -143,7 +174,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                 ),
                 bottom: TabBar(
                   controller: _tabController,
-                  tabs: [
+                  tabs: const [
                     Tab(text: 'Overview'),
                     Tab(text: 'Reviews'),
                     Tab(text: 'Photos'),
@@ -338,5 +369,61 @@ class _PlaceDetailPageState extends State<PlaceDetail>
         fontStyle: FontStyle.normal,
         fontWeight: FontWeight.normal,
         fontFamily: 'Poppins');
+  }
+
+  String cleanPhoneNumber(String phoneNum) {
+    return phoneNum.replaceAll(RegExp(r'[^\d]'), '');
+  }
+
+  Widget directionsButton() {
+    return ElevatedButton(
+      onPressed: () => launchMapUrl(widget.address),
+      child: Text('Directions'),
+      style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 242, 237, 237),
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          )),
+    );
+  }
+
+  Widget callButton() {
+    return ElevatedButton(
+        onPressed: () => _makePhoneCall(cleanPhoneNumber('6822569629')),
+        child: const Text('Call', style: TextStyle(color: Colors.black)),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 242, 237, 237),
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            )));
+  }
+
+  Future<void> launchMapUrl(String address,
+      {LaunchMode linkLaunchMode = LaunchMode.externalApplication}) async {
+    String encodedAddress = Uri.encodeComponent(address);
+    String googleMapUrl =
+        "https://www.google.com/maps/search/?api=1&query=$encodedAddress";
+    String appleMapUrl = "http://maps.apple.com/?q=$encodedAddress";
+    if (Platform.isAndroid) {
+      try {
+        if (await canLaunchUrl(Uri.parse(googleMapUrl))) {
+          await launchUrl(Uri.parse(googleMapUrl), mode: linkLaunchMode);
+        }
+      } catch (error) {
+        throw ("Cannot launch Google maps, please launch manually");
+      }
+    }
+
+    if (Platform.isIOS) {
+      try {
+        if (await canLaunchUrlString(appleMapUrl)) {
+          await launchUrlString(appleMapUrl);
+        }
+      } catch (error) {
+        throw ("Cannot launch Apple maps, please launch manually");
+      }
+    }
   }
 }
