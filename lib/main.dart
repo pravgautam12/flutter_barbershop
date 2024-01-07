@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_barbershop/blocs/filters/filters_bloc.dart';
 import 'package:flutter_barbershop/config/Theme.dart';
 import 'package:flutter_barbershop/config/app_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_barbershop/providers/filter_provider.dart';
+import 'package:provider/provider.dart';
 import 'screens/screens.dart';
 
 void main() {
@@ -14,20 +14,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //wrapping Material app with this widget to be able to use BLoC
-    return MultiBlocProvider(
-      providers: [
-        //create new instance of Filters BLoC and add FilterLoad event so that
-        //app is restarted, filter screen will be ready to be used.
-        BlocProvider(create: (context) => FiltersBloc()..add(FilterLoad()))
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: theme(),
-        home: Scaffold(body: MyHomePage(callFromFilterScreen: false)),
-        onGenerateRoute: AppRouter.onGenerateRoute,
-        initialRoute: MyHomePage.routeName,
-      ),
-    );
+    //wrapping Material app with this widget to be able to use FilterProvider inside the entire app
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => FilterProvider()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: theme(),
+          home: Scaffold(body: MyHomePage()),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          initialRoute: MyHomePage.routeName,
+        ));
   }
 }

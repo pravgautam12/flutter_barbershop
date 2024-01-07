@@ -1,14 +1,8 @@
 //import 'dart:html';
 
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import 'package:flutter_barbershop/address_search.dart';
-import 'package:flutter_barbershop/place_service.dart';
-import 'package:flutter_barbershop/location.dart';
-import 'package:flutter_barbershop/main.dart';
-import 'package:flutter_barbershop/models/constants.dart';
 
 class PlaceDetail extends StatefulWidget {
   final String? placeId;
