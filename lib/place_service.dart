@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:core';
 import 'dart:io';
+import 'package:flutter_barbershop/home_page_widgets.dart';
 import 'package:flutter_barbershop/models/shared_pref_cache_data.dart';
 
 import 'package:flutter/material.dart';
@@ -46,9 +49,9 @@ class PlaceDetails {
 }
 
 class PlaceResponse {
-  final String name;
-  final String placeId;
-  final String photoReference;
+  String name;
+  String placeId;
+  String photoReference;
 
   PlaceResponse(
     this.name,
@@ -62,6 +65,16 @@ class PlaceResponse {
   }
 }
 
+class PlaceResponse_Token {
+  List<PlaceResponse> placeResponseList;
+  String token;
+
+  PlaceResponse_Token(
+    this.placeResponseList,
+    this.token,
+  );
+}
+
 class DistanceMatrix {
   String distance;
   DistanceMatrix(this.distance);
@@ -72,7 +85,6 @@ class Suggestion {
   final String description;
 
   Suggestion(this.placeId, this.description);
-
   @override
   String toString() {
     return 'Suggestion(description: $description, placeId: $placeId)';
@@ -154,32 +166,40 @@ class PlaceApiProvider {
     }
   }
 
-  Future<List<PlaceResponse>> cacheData(double l, double g) async {
-    try {
-      final jsonData = await mySharedPreferences.getDataIfNotExpired();
-      if (jsonData != null) {
-        final decodedData = json.decode(jsonData);
-        if (decodedData['status'] == 'OK') {
-          return decodedData['results']
-              .map<PlaceResponse>((p) => PlaceResponse(
-                  p['name'], p['place_id'], p['photos'][0]['photo_reference']))
-              .toList();
-        }
-        return json.decode(jsonData);
-      } else {
-        return getNearbyPlaces(l, g);
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
+  // Future<List<PlaceResponse>> cacheData(double l, double g) async {
+  //   try {
+  //     final jsonData = await mySharedPreferences.getDataIfNotExpired();
+  //     if (jsonData != null) {
+  //       final decodedData = json.decode(jsonData);
+  //       if (decodedData['status'] == 'OK') {
+  //         return decodedData['results']
+  //             .map<PlaceResponse>((p) => PlaceResponse(
+  //                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+  //             .toList();
+  //       }
+  //       return json.decode(jsonData);
+  //     } else {
+  //       return getNearbyPlaces(l, g);
+  //     }
+  //   } catch (error) {
+  //     throw Exception(error);
+  //   }
+  // }
 
-  Future<List<PlaceResponse>> getNearbyPlaces(double l, double g) async {
+  Future<PlaceResponse_Token> getNearbyPlaces(double l, double g,
+      [String? token]) async {
     const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
+    String request = '';
 
-    final request =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+    PlaceResponse_Token pRT = PlaceResponse_Token([], '');
 
+    if (token == null) {
+      request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+    } else {
+      request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?&pagetoken=$token&key=$apiKey';
+    }
     final response = await http.get(Uri.parse(request));
 
     if (response.statusCode == 200) {
@@ -188,60 +208,33 @@ class PlaceApiProvider {
       // final isSaved = await mySharedPreferences.saveDataWithExpiration(
       //     response.body, const Duration(days: 10));
 
+      //PlaceResponse PR = PlaceResponse('', '', '', '');
       if (result['status'] == 'OK') {
-        return result['results']
+        // return result['results']
+        //     .map<PlaceResponse>((p) => PlaceResponse(
+        //         p['name'], p['place_id'], p['photos'][0]['photo_reference']), p['next_page_token'])
+        //     .toList();
+
+        try {
+          pRT.token = result['next_page_token'];
+        } catch (e) {
+          pRT.token = '';
+        }
+
+        List<PlaceResponse> list = result['results']
             .map<PlaceResponse>((p) => PlaceResponse(
                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
             .toList();
+
+        pRT.placeResponseList = list;
+        return pRT;
       }
+
       throw Exception(result['error_message']);
     } else {
       throw Exception('Failed to fetch places');
     }
   }
-
-  // Future<PlaceDetails> cacheDataPlaceDetails(
-  //     String placeId, double latitude, double longitude) async {
-  //   PlaceDetails pd = PlaceDetails('', [], [], false, 0, [], [], '');
-
-  //   try {
-  //     final jsonData1 = await mySharedPreferences1.getDataIfNotExpired();
-  //     final jsonData2 = await mySharedPreferences2.getDataIfNotExpired();
-  //     if (jsonData1 != null) {
-  //       final decodedData = json.decode(jsonData1);
-  //       if (decodedData['status'] == 'OK') {
-  //         pd.address = decodedData['result']['formatted_address'];
-
-  //         final components = decodedData['result']['photos'];
-  //         List<String> pictures = [];
-
-  //         components.forEach((c) {
-  //           pictures.add(c['photo_reference']);
-  //         });
-
-  //         pd.photos = pictures;
-  //         pd.openStatus = decodedData['result']['opening_hours']['open_now'];
-  //         List<dynamic> hours =
-  //             decodedData['result']['opening_hours']['weekday_text'];
-  //         pd.openingHours = hours.map((p) => p.toString()).toList();
-  //         pd.rating = decodedData['result']['rating'].toDouble();
-  //         pd.periods = decodedData['result']['opening_hours']['periods'];
-  //         pd.reviews = decodedData['result']['reviews'];
-  //       }
-  //     }
-
-  //     if (jsonData2 != null) {
-  //       final decodedData1 = json.decode(jsonData2);
-  //       pd.distance =
-  //           decodedData1['rows'][0]['elements'][0]['distance']['text'];
-  //     } else {
-  //       return getAddress(placeId, latitude, longitude);
-  //     }
-  //     return pd;
-  //   } catch (error) {
-  //     throw Exception(error);
-  //   }
-  // }
 
   Future<PlaceDetails> getAddress(
       String placeId, double latitude, double longitude) async {

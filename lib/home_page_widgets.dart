@@ -9,26 +9,127 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_barbershop/main.dart';
 
-Widget visibility(bool showNearbyPlaces) {
+Widget visibility(bool showNearbyPlaces, BuildContext context) {
+  String plcToken = '';
+  //MyHomePageState.fetchPosts(lati, longi);
+
+  //Widget ft = const SizedBox();
+  // return Visibility(
+  //     visible: showNearbyPlaces,
+  //     //child: SingleChildScrollView(
+  //     child: Column(children: [
+  //       FutureBuilder<PlaceResponse_Token>(
+  //         future: MyHomePageState.fetchNearbyPlaces(lati, longi),
+  //         builder: (context, snapshot) {
+  //           if (snapshot.connectionState == ConnectionState.waiting) {
+  //             return const CircularProgressIndicator();
+  //           } else if (snapshot.hasError) {
+  //             return Text('Error: ${snapshot.error}');
+  //           } else if (snapshot.hasData) {
+  //             PlaceResponse_Token? placeResponseToken =
+  //                 snapshot.data as PlaceResponse_Token?;
+  //             plcToken = placeResponseToken!.token;
+
+  //             if (placeResponseToken != null &&
+  //                 placeResponseToken.placeResponseList != null) {
+  //               List<PlaceResponse> placeList =
+  //                   placeResponseToken.placeResponseList;
+
+  //               return Column(children: [
+  //                 ListView.builder(
+  //                   physics: NeverScrollableScrollPhysics(),
+  //                   itemCount: placeList.length,
+  //                   shrinkWrap: true,
+  //                   itemBuilder: (context, index) {
+  //                     return PlaceListItem(place: placeList[index]);
+  //                   },
+  //                 ),
+  //                 if (plcToken != '')
+  //                   GestureDetector(
+  //                     child: Text('uppy'),
+  //                     onTap: () {
+  //                       print('GestureDetector tapped');
+  //                       ft = loadMoreData(plcToken);
+  //                     },
+  //                   ),
+  //                 ft,
+  //               ]);
+  //             }
+  //           }
+
+  //           return const Text("no data found");
+  //         },
+  //       ),
+
+  //       // if (plcToken != '')
+  //       //   GestureDetector(
+  //       //       // child: plcToken != '' ? Text('Load') : Text(''),
+  //       //       child: plcToken != '' ? Text('Load') : Text('wassup'),
+  //       //       onTap: () {
+  //       //         String localToken = plcToken;
+  //       //         String message = '';
+  //       //         if (localToken != '') {
+  //       //           message = 'got a value';
+  //       //         } else if (localToken == '') {
+  //       //           message = 'no luck';
+  //       //         }
+
+  //       //         showDialog(
+  //       //             context: context,
+  //       //             builder: (BuildContext context) {
+  //       //               return AlertDialog(
+  //       //                   title: const Text('Result'),
+  //       //                   content: Text(message),
+  //       //                   actions: [
+  //       //                     TextButton(
+  //       //                       onPressed: () {
+  //       //                         Navigator.of(context).pop();
+  //       //                       },
+  //       //                       child: const Text('OK'),
+  //       //                     )
+  //       //                   ]);
+  //       //             });
+  //       //       })
+  //     ]));
+
   return Visibility(
       visible: showNearbyPlaces,
-      //child: SingleChildScrollView(
-      child: FutureBuilder<List<PlaceResponse>>(
-        future: MyHomePageState.fetchNearbyPlaces(lati, longi),
-        builder: (context, snapshot) =>
-            snapshot.connectionState == ConnectionState.waiting
-                ? const CircularProgressIndicator()
-                : snapshot.hasError
-                    ? Text('Error: ${snapshot.error}')
-                    : snapshot.hasData
-                        ? ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) => PlaceListItem(
-                                place: snapshot.data?[index] as PlaceResponse),
-                            itemCount: snapshot.data?.length)
-                        : const Text("no data found"),
-      ));
+      child: posts[0].length != 0
+          ? ListView.builder(
+              itemCount: posts[0].length,
+              itemBuilder: (context, index) {
+                return PlaceListItem(place: posts[0][index]);
+              })
+          : Text(''));
+}
+
+Widget loadMoreData(String x) {
+  return FutureBuilder<PlaceResponse_Token>(
+    future: MyHomePageState.fetchNearbyPlaces(lati, longi),
+    builder: (context, snapshot) =>
+        snapshot.connectionState == ConnectionState.waiting
+            ? const CircularProgressIndicator()
+            : snapshot.hasError
+                ? Text('Error: ${snapshot.error}')
+                : snapshot.hasData
+                    ? ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: snapshot.data?.placeResponseList.length ?? 0,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          PlaceResponse_Token? placeResponseToken =
+                              snapshot.data as PlaceResponse_Token?;
+                          //plcToken = placeResponseToken!.token;
+                          if (placeResponseToken != null &&
+                              placeResponseToken.placeResponseList != null) {
+                            List<PlaceResponse> placeList =
+                                placeResponseToken.placeResponseList;
+                            return PlaceListItem(place: placeList[index]);
+                          }
+                        },
+                      )
+                    : const Text("no data found"),
+  );
 }
 
 Widget textField(
@@ -37,7 +138,8 @@ Widget textField(
     String locationText,
     bool showNearbyPlaces,
     customSetState,
-    Future<void> Function() callBackFunc) {
+    Future<void> Function() callBackFunc,
+    Future<void> Function() onTapCallBack) {
   return TextField(
     controller: _controller,
     readOnly: true,
@@ -54,6 +156,7 @@ Widget textField(
         longi = placeDetails.longitude;
         obtainedResult = result;
         customSetState(_controller, showNearbyPlaces, obtainedResult);
+        await onTapCallBack();
       }
     },
     decoration: InputDecoration(

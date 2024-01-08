@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:core';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_barbershop/home_page_widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +20,10 @@ void main() {
 Suggestion obtainedResult = Suggestion('', '');
 double lati = 0.00;
 double longi = 0.00;
+
+List posts = [[], ''];
+
+List wassup = [1, 2, 3];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,9 +36,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
       home: const Scaffold(
-          backgroundColor: Colors.white,
-          appBar: null,
-          body: const MyHomePage()),
+          backgroundColor: Colors.white, appBar: null, body: MyHomePage()),
     );
   }
 }
@@ -74,18 +78,71 @@ class MyHomePageState extends State<MyHomePage> {
     lati = coord.lat;
     longi = coord.long;
 
-    setState(() {
-      showNearbyPlaces = true;
-    });
+    fetchPosts(lati, longi);
+    // setState(() {
+    //   showNearbyPlaces = true;
+    // });
   }
 
-  static Future<List<PlaceResponse>> fetchNearbyPlaces(
-      double latitude, double longitude) async {
+  Future<void> fetchPosts(double l, double g, [String? x]) async {
+    PlaceResponse_Token pRT = PlaceResponse_Token([], '');
+    final request =
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey';
+
+    if (x != null) {
+      final request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&pagetoken=$x';
+    }
+    final uri = Uri.parse(request);
+    final response = await http.get(Uri.parse(request));
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        // return result['results']
+        //     .map<PlaceResponse>((p) => PlaceResponse(
+        //         p['name'], p['place_id'], p['photos'][0]['photo_reference']), p['next_page_token'])
+        //     .toList();
+
+        try {
+          pRT.token = result['next_page_token'];
+        } catch (e) {
+          pRT.token = '';
+        }
+
+        List<PlaceResponse> list = result['results']
+            .map<PlaceResponse>((p) => PlaceResponse(
+                p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+            .toList();
+
+        pRT.placeResponseList = list;
+
+        setState(() {
+          posts[0] = list;
+          showNearbyPlaces = true;
+
+          posts[1] = pRT.token;
+        });
+
+        int x = 1;
+      }
+    }
+  }
+
+  static Future<PlaceResponse_Token> fetchNearbyPlaces(
+      double latitude, double longitude,
+      [String? x]) async {
     final sessionToken = const Uuid().v4();
     //final places = await PlaceApiProvider(sessionToken).getNearbyPlaces(latitude, longitude);
-    final places = await PlaceApiProvider(sessionToken)
-        .getNearbyPlaces(latitude, longitude);
-    return places;
+    if (x == null) {
+      final places = await PlaceApiProvider(sessionToken)
+          .getNearbyPlaces(latitude, longitude);
+      return places;
+    } else {
+      final places = await PlaceApiProvider(sessionToken)
+          .getNearbyPlaces(latitude, longitude, x);
+      return places;
+    }
   }
 
   @override
@@ -99,6 +156,10 @@ class MyHomePageState extends State<MyHomePage> {
       _controller.text = r.description;
       x = true;
     });
+  }
+
+  Future<void> onTapCallBack() async {
+    await fetchPosts(lati, longi);
   }
 
   @override
@@ -126,9 +187,21 @@ class MyHomePageState extends State<MyHomePage> {
                   showNearbyPlaces,
                   customSetState,
                   callBackFunc,
+                  onTapCallBack,
                 ),
                 const SizedBox(height: 10),
-                visibility(showNearbyPlaces),
+                //visibility(showNearbyPlaces, context),
+
+                if (posts[0].length != 0)
+                  ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: posts[0].length,
+                      itemBuilder: (context, index) {
+                        return PlaceListItem(place: posts[0][index]);
+                        //return Text(posts[0][0].name);
+                      }),
+                //Text('xx'),
               ],
             ),
           ),
