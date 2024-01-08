@@ -30,11 +30,13 @@ class FilterScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 50),
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.all(Radius.circular(5)))),
+                                BorderRadius.all(Radius.circular(5))),
+                        backgroundColor: Colors.white),
                     onPressed: () {
                       Navigator.pushNamed(context, '/');
                     },
-                    child: Text('Apply'))
+                    child: Text('Apply',
+                              style: TextStyle(color: Colors.black)))
               ],
             )),
         body: Padding(

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/main.dart';
 import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_barbershop/screens/screens.dart';
 
