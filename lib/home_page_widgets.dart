@@ -9,12 +9,12 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_barbershop/main.dart';
 
-Widget visibility(bool showNearbyPlaces) {
+Widget visibility(bool showNearbyPlaces, BuildContext context) {
   return Visibility(
       visible: showNearbyPlaces,
       //child: SingleChildScrollView(
       child: FutureBuilder<List<PlaceResponse>>(
-        future: MyHomePageState.fetchNearbyPlaces(lati, longi),
+        future: MyHomePageState.fetchNearbyPlaces(lati, longi, context),
         builder: (context, snapshot) =>
             snapshot.connectionState == ConnectionState.waiting
                 ? const CircularProgressIndicator()
@@ -66,24 +66,27 @@ Widget textField(
           padding: const EdgeInsets.all(12),
           child: SvgPicture.asset('assets/icons/Search.svg'),
         ),
-        suffixIcon: Container(
-          width: 100,
-          child: IntrinsicHeight(
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              const VerticalDivider(
-                color: Colors.black,
-                indent: 10,
-                endIndent: 10,
-                thickness: 0.1,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SvgPicture.asset('assets/icons/Filter.svg'),
-              )
-            ],
-          )),
+        suffixIcon: GestureDetector(
+          onTap: () => {Navigator.pushNamed(context, '/filter')},
+          child: Container(
+            width: 100,
+            child: IntrinsicHeight(
+                child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const VerticalDivider(
+                  color: Colors.black,
+                  indent: 10,
+                  endIndent: 10,
+                  thickness: 0.1,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SvgPicture.asset('assets/icons/Filter.svg'),
+                )
+              ],
+            )),
+          ),
         ),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
