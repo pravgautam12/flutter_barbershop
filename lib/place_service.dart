@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_barbershop/models/shared_pref_cache_data.dart';
-
-import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
 
@@ -95,7 +96,8 @@ class PlaceApiProvider {
 
   Future<List<Suggestion>> fetchSuggestions(String input, String lang) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=$lang&components=country:us&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input'
+        '&types=address&language=$lang&components=country:us&key=$apiKey&sessiontoken=$sessionToken';
     final response = await http.get(Uri.parse(request));
     //Use HttpClient instead of http package for low level functionality, available in flutter documentation.
 
@@ -119,7 +121,8 @@ class PlaceApiProvider {
 
   Future<Place> getPlaceDetailFromId(String placeId) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId'
+        '&fields=geometry&key=$apiKey&sessiontoken=$sessionToken';
     final response = await http.get(Uri.parse(request));
 
     if (response.statusCode == 200) {
@@ -154,31 +157,33 @@ class PlaceApiProvider {
     }
   }
 
-  Future<List<PlaceResponse>> cacheData(double l, double g) async {
-    try {
-      final jsonData = await mySharedPreferences.getDataIfNotExpired();
-      if (jsonData != null) {
-        final decodedData = json.decode(jsonData);
-        if (decodedData['status'] == 'OK') {
-          return decodedData['results']
-              .map<PlaceResponse>((p) => PlaceResponse(
-                  p['name'], p['place_id'], p['photos'][0]['photo_reference']))
-              .toList();
-        }
-        return json.decode(jsonData);
-      } else {
-        return getNearbyPlaces(l, g);
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
+  // Future<List<PlaceResponse>> cacheData(double l, double g) async {
+  //   try {
+  //     final jsonData = await mySharedPreferences.getDataIfNotExpired();
+  //     if (jsonData != null) {
+  //       final decodedData = json.decode(jsonData);
+  //       if (decodedData['status'] == 'OK') {
+  //         return decodedData['results']
+  //             .map<PlaceResponse>((p) => PlaceResponse(
+  //                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+  //             .toList();
+  //       }
+  //       return json.decode(jsonData);
+  //     } else {
+  //       return getNearbyPlaces(l, g);
+  //     }
+  //   } catch (error) {
+  //     throw Exception(error);
+  //   }
+  // }
 
-  Future<List<PlaceResponse>> getNearbyPlaces(double l, double g) async {
+  Future<List<PlaceResponse>> getNearbyPlaces(
+      double l, double g, BuildContext context) async {
+    int radius = context.watch<FilterProvider>().distance;
     const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
-
     final request =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop'
+        '&location=$l,$g&radius=$radius&type=salons&key=$apiKey&sessiontoken=$sessionToken';
 
     final response = await http.get(Uri.parse(request));
 
@@ -252,10 +257,13 @@ class PlaceApiProvider {
 
     // the one below is for reducing api calls
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=opening_hours/open_now&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId'
+        '&fields=opening_hours/open_now&key=$apiKey&sessiontoken=$sessionToken';
 
     final request1 =
-        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken&units=imperial';
+        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations='
+        'place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken='
+        '$sessionToken&units=imperial';
 
     final response = await http.get(Uri.parse(request));
     final response1 = await http.get(Uri.parse(request1));
@@ -324,7 +332,9 @@ class PlaceApiProvider {
   Future<DistanceMatrix> getDistanceMatrix(
       String placeId, double latitude, double longitude) async {
     final request =
-        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken=$sessionToken&units=imperial';
+        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations='
+        'place_id:$placeId&origins=$latitude,$longitude&key=$apiKey&sessiontoken'
+        '=$sessionToken&units=imperial';
 
     final response = await http.get(Uri.parse(request));
 
