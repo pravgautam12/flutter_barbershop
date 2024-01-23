@@ -60,10 +60,32 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
+  bool isLoadingMore = false;
+  final scrollController = ScrollController();
 
   TextEditingController latitudeController = TextEditingController();
 
   //var coord = Coordinates();
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    //if (isLoadingMore) return;
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      // setState(() {
+      //   isLoadingMore = true;
+      // });
+      fetchPosts(lati, longi, posts[1]);
+      print('wassup');
+      // setState(() {
+      //   isLoadingMore = false;
+      // });
+    }
+  }
 
   void updateLocationText() {
     setState(() {
@@ -86,13 +108,21 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future<void> fetchPosts(double l, double g, [String? x]) async {
     PlaceResponse_Token pRT = PlaceResponse_Token([], '');
-    final request =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey';
+    String request = '';
 
-    if (x != null) {
-      final request =
+    if (x == null) {
+      request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey';
+    }
+    if (x != null && x != "") {
+      request =
           'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&pagetoken=$x';
     }
+
+    if (x != null && x == "") {
+      return;
+    }
+
     final uri = Uri.parse(request);
     final response = await http.get(Uri.parse(request));
 
@@ -110,15 +140,28 @@ class MyHomePageState extends State<MyHomePage> {
           pRT.token = '';
         }
 
-        List<PlaceResponse> list = result['results']
-            .map<PlaceResponse>((p) => PlaceResponse(
-                p['name'], p['place_id'], p['photos'][0]['photo_reference']))
-            .toList();
+        // List<PlaceResponse> list = result['results']
+        //     .map<PlaceResponse>((p) => PlaceResponse(
+        //         p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+        //     .toList();
+
+        List<PlaceResponse> list = result['results'].map<PlaceResponse>((p) {
+          final name = p['name'];
+          final placeId = p['place_id'];
+          String photoReference = '';
+
+          // Check if 'photos' is present and not empty
+          if (p['photos'] != null && p['photos'].isNotEmpty) {
+            photoReference = p['photos'][0]['photo_reference'];
+          }
+
+          return PlaceResponse(name, placeId, photoReference);
+        }).toList();
 
         pRT.placeResponseList = list;
 
         setState(() {
-          posts[0] = list;
+          posts[0] = posts[0] + list;
           showNearbyPlaces = true;
 
           posts[1] = pRT.token;
@@ -168,44 +211,46 @@ class MyHomePageState extends State<MyHomePage> {
       children: [
         //backgroundColor: Colors.white,
         SingleChildScrollView(
+            controller: scrollController,
             child: Column(children: <Widget>[
-          Container(
-            margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
-                  color: const Color(0xff1D1617).withOpacity(0.11),
-                  blurRadius: 40,
-                  spreadRadius: 0.0)
-            ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                textField(
-                  context,
-                  _controller,
-                  locationText,
-                  showNearbyPlaces,
-                  customSetState,
-                  callBackFunc,
-                  onTapCallBack,
-                ),
-                const SizedBox(height: 10),
-                //visibility(showNearbyPlaces, context),
+              Container(
+                margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
+                decoration: BoxDecoration(boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xff1D1617).withOpacity(0.11),
+                      blurRadius: 40,
+                      spreadRadius: 0.0)
+                ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    textField(
+                      context,
+                      _controller,
+                      locationText,
+                      showNearbyPlaces,
+                      customSetState,
+                      callBackFunc,
+                      onTapCallBack,
+                    ),
+                    const SizedBox(height: 10),
+                    //visibility(showNearbyPlaces, context),
 
-                if (posts[0].length != 0)
-                  ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: posts[0].length,
-                      itemBuilder: (context, index) {
-                        return PlaceListItem(place: posts[0][index]);
-                        //return Text(posts[0][0].name);
-                      }),
-                //Text('xx'),
-              ],
-            ),
-          ),
-        ]))
+                    if (posts[0].length != 0)
+                      ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: posts[0].length,
+                          itemBuilder: (context, index) {
+                            return PlaceListItem(place: posts[0][index]);
+
+                            //return Text(posts[0][0].name);
+                          }),
+                    //Text('xx'),
+                  ],
+                ),
+              ),
+            ]))
       ],
     );
   }

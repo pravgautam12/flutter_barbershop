@@ -85,6 +85,12 @@ class _PlaceDetailPageState extends State<PlaceDetail>
 
   @override
   Widget build(BuildContext context) {
+    double x;
+    if (widget.photo_reference != '') {
+      x = 600;
+    } else {
+      x = 250;
+    }
     return NestedScrollView(
         headerSliverBuilder: (context, value) {
           return [
@@ -99,7 +105,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                 pinned: true,
                 //snap: true,
                 floating: true,
-                expandedHeight: 600,
+                expandedHeight: x,
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Container(
@@ -151,14 +157,15 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                 callButton(),
                                 directionsButton(),
                               ]),
-                              Container(
-                                  width: 400,
-                                  height: 300,
-                                  child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(
-                                          "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                                          fit: BoxFit.cover))),
+                              if (widget.photo_reference != '')
+                                Container(
+                                    width: 400,
+                                    height: 300,
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.network(
+                                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                            fit: BoxFit.cover))),
                             ],
                           ))),
                 ),

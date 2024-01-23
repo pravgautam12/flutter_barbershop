@@ -281,15 +281,16 @@ Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
                 },
               ),
               const SizedBox(height: 10),
-              Container(
-                  width: 400,
-                  height: 300,
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
-                        fit: BoxFit.cover,
-                      ))),
+              if (place.photoReference != '')
+                Container(
+                    width: 400,
+                    height: 300,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place!.photoReference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                          fit: BoxFit.cover,
+                        ))),
               const SizedBox(height: 30),
               const Divider(thickness: 3),
             ]))),
