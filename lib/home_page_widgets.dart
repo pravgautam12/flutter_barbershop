@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/providers/miscellaneous_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
-import 'package:flutter_barbershop/location.dart';
 import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_barbershop/main.dart';
 
 Widget visibility(bool showNearbyPlaces, BuildContext context) {
@@ -21,12 +20,26 @@ Widget visibility(bool showNearbyPlaces, BuildContext context) {
                 : snapshot.hasError
                     ? Text('Error: ${snapshot.error}')
                     : snapshot.hasData
-                        ? ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) => PlaceListItem(
-                                place: snapshot.data?[index] as PlaceResponse),
-                            itemCount: snapshot.data?.length)
+                        ? Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0,5,0,0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  showResultCount(context),
+                                ],
+                              ),
+                            ),
+                            ListView.builder(
+                              padding: const EdgeInsets.all(0),
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) => PlaceListItem(
+                                    place: snapshot.data?[index] as PlaceResponse),
+                                itemCount: snapshot.data?.length),
+                          ],
+                        )
                         : const Text("no data found"),
       ));
 }
@@ -95,12 +108,13 @@ Widget textField(
 }
 
 Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
-  return GestureDetector(
-    child: Container(
+  return Column(
+    children: [
+      GestureDetector(
         child: Padding(
             padding: const EdgeInsets.all(10),
             child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const SizedBox(height: 0),
               Text(
                 place!.name,
@@ -121,7 +135,7 @@ Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
                     // Display the retrieved address
                     placedetails = snapshot.data!;
                     List<String> address = placedetails!.address.split(',');
-
+        
                     bool a;
                     if (placedetails!.openStatus == 'Open') {
                       a = true;
@@ -129,13 +143,13 @@ Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
                     if (placedetails!.openStatus == 'Closed') {
                       a = false;
                     } else {}
-
+        
                     // String test = NextOpenOrClose(
                     //     placedetails!.periods, a);
-
+        
                     //removed periods from the call, kept openStatus
                     String test = '';
-
+        
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -192,24 +206,26 @@ Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
                       ))),
               const SizedBox(height: 30),
               const Divider(thickness: 3),
-            ]))),
-    onTap: () async => await Future.microtask(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PlaceDetail(
-                  placeId: place!.placeId,
-                  name: place!.name,
-                  address: placedetails!.address,
-                  photo_reference: place!.photoReference,
-                  photos: placedetails!.photos,
-                  openStatus: placedetails!.openStatus,
-                  openingHours: placedetails!.openingHours,
-                  reviews: placedetails!.reviews,
-                  phoneNumber: placedetails!.phoneNumber,
-                )),
-      );
-    }),
+            ])),
+        onTap: () async => await Future.microtask(() {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PlaceDetail(
+                      placeId: place!.placeId,
+                      name: place!.name,
+                      address: placedetails!.address,
+                      photo_reference: place!.photoReference,
+                      photos: placedetails!.photos,
+                      openStatus: placedetails!.openStatus,
+                      openingHours: placedetails!.openingHours,
+                      reviews: placedetails!.reviews,
+                      phoneNumber: placedetails!.phoneNumber,
+                    )),
+          );
+        }),
+      ),
+    ],
   );
 }
 
@@ -233,5 +249,13 @@ TextStyle openCloseStyle(String color) {
     fontStyle: FontStyle.italic,
     fontSize: 14,
     color: Colors.black,
+  );
+}
+
+Widget showResultCount(BuildContext context) {
+  var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+  return Text(
+    "Showing $resultCount results",
+    style: const TextStyle(color: Colors.grey),
   );
 }

@@ -1,21 +1,15 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/providers/miscellaneous_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
 import 'package:flutter_barbershop/location.dart';
-import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_barbershop/home_page_widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_barbershop/config/Theme.dart';
 import 'package:flutter_barbershop/config/app_router.dart';
 import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:provider/provider.dart';
-import 'screens/screens.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => FilterProvider()),
+          ChangeNotifierProvider(create: (context) => MiscellaneousProvider())
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -140,7 +135,6 @@ class MyHomePageState extends State<MyHomePage> {
                   customSetState,
                   callBackFunc,
                 ),
-                const SizedBox(height: 10),
                 visibility(showNearbyPlaces, context),
               ],
             ),

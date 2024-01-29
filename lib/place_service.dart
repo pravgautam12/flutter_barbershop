@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_barbershop/models/shared_pref_cache_data.dart';
 import 'package:flutter_barbershop/providers/filter_provider.dart';
+import 'package:flutter_barbershop/providers/miscellaneous_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -194,6 +195,12 @@ class PlaceApiProvider {
       //     response.body, const Duration(days: 10));
 
       if (result['status'] == 'OK') {
+        if (context.mounted) 
+        {
+          var resultCount = result["results"].length;
+          context.read<MiscellaneousProvider>().changeCount(count: resultCount);
+        }
+        
         return result['results']
             .map<PlaceResponse>((p) => PlaceResponse(
                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
