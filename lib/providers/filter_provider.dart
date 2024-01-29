@@ -8,5 +8,4 @@ class FilterProvider extends ChangeNotifier {
   void changeFilter({required int newDistance}) async {
     distance = newDistance;
   }
-
 }
