@@ -119,7 +119,7 @@ class MyHomePageState extends State<MyHomePage> {
           'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&pagetoken=$x';
     }
 
-    if (x != null && x == "") {
+    if (x != null && x.isEmpty) {
       return;
     }
 
