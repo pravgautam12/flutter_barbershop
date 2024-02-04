@@ -202,6 +202,9 @@ class PlaceApiProvider {
         }
         
         return result['results']
+            .where((p) => p['photos'] != null
+                        && p['name'] != null
+                        && p['place_id'] != null)
             .map<PlaceResponse>((p) => PlaceResponse(
                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
             .toList();

@@ -106,7 +106,7 @@ class MyHomePageState extends State<MyHomePage> {
   customSetState(TextEditingController c, bool x, Suggestion r) {
     setState(() {
       _controller.text = r.description;
-      x = true;
+      showNearbyPlaces = true;
     });
   }
 
