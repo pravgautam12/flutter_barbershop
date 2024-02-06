@@ -95,12 +95,19 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future<void> callBackFunc() async {
     updateLocationText();
+    posts[0].clear();
+    posts[1] = '';
     final loc = LocationService();
     Coordinates coord = await loc.getCurrentLocation();
     lati = coord.lat;
     longi = coord.long;
 
+    _controller.text = '';
+
+    posts[0].clear();
+
     fetchPosts(lati, longi);
+
     // setState(() {
     //   showNearbyPlaces = true;
     // });
@@ -109,6 +116,9 @@ class MyHomePageState extends State<MyHomePage> {
   Future<void> fetchPosts(double l, double g, [String? x]) async {
     PlaceResponse_Token pRT = PlaceResponse_Token([], '');
     String request = '';
+
+    // posts[0].clear();
+    // posts[1] = '';
 
     if (x == null) {
       request =
@@ -195,6 +205,7 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   customSetState(TextEditingController c, bool x, Suggestion r) {
+    posts[0].clear();
     setState(() {
       _controller.text = r.description;
       x = true;
