@@ -117,9 +117,6 @@ class MyHomePageState extends State<MyHomePage> {
     PlaceResponse_Token pRT = PlaceResponse_Token([], '');
     String request = '';
 
-    // posts[0].clear();
-    // posts[1] = '';
-
     if (x == null) {
       request =
           'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey';
