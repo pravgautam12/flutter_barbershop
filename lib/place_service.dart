@@ -179,11 +179,11 @@ class PlaceApiProvider {
 
   Future<List<PlaceResponse>> getNearbyPlaces(
       double l, double g, BuildContext context) async {
-    int radius = context.watch<FilterProvider>().distance;
+    //int radius = context.watch<FilterProvider>().distance;
     const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
     final request =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop'
-        '&location=$l,$g&radius=$radius&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+        '&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
 
     final response = await http.get(Uri.parse(request));
 
@@ -195,6 +195,9 @@ class PlaceApiProvider {
 
       if (result['status'] == 'OK') {
         return result['results']
+            .where((p) => p['photos'] != null
+                        && p['name'] != null
+                        && p['place_id'] != null)
             .map<PlaceResponse>((p) => PlaceResponse(
                 p['name'], p['place_id'], p['photos'][0]['photo_reference']))
             .toList();
