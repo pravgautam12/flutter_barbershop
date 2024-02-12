@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:core';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_barbershop/config/app_router.dart';
 import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:provider/provider.dart';
 import 'screens/screens.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -24,6 +26,10 @@ void main() {
 Suggestion obtainedResult = Suggestion('', '');
 double lati = 0.00;
 double longi = 0.00;
+
+List posts = [[], ''];
+
+List wassup = [1, 2, 3];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -54,8 +60,7 @@ class MyHomePage extends StatefulWidget {
 
   static Route route() {
     return MaterialPageRoute(
-        builder: (_) => MyHomePage(),
-        settings: RouteSettings(name: routeName));
+        builder: (_) => MyHomePage(), settings: RouteSettings(name: routeName));
   }
 
   @override
@@ -70,10 +75,32 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
+  bool isLoadingMore = false;
+  final scrollController = ScrollController();
 
   TextEditingController latitudeController = TextEditingController();
 
   //var coord = Coordinates();
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    //if (isLoadingMore) return;
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      // setState(() {
+      //   isLoadingMore = true;
+      // });
+      fetchPosts(lati, longi, posts[1]);
+      print('wassup');
+      // setState(() {
+      //   isLoadingMore = false;
+      // });
+    }
+  }
 
   void updateLocationText() {
     setState(() {
@@ -83,14 +110,88 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future<void> callBackFunc() async {
     updateLocationText();
+    posts[0].clear();
+    posts[1] = '';
     final loc = LocationService();
     Coordinates coord = await loc.getCurrentLocation();
     lati = coord.lat;
     longi = coord.long;
 
-    setState(() {
-      showNearbyPlaces = true;
-    });
+    _controller.text = '';
+
+    posts[0].clear();
+
+    fetchPosts(lati, longi);
+
+    // setState(() {
+    //   showNearbyPlaces = true;
+    // });
+  }
+
+  Future<void> fetchPosts(double l, double g, [String? x]) async {
+    PlaceResponse_Token pRT = PlaceResponse_Token([], '');
+    String request = '';
+
+    if (x == null) {
+      request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey';
+    }
+    if (x != null && x != "") {
+      request =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop&location=$l,$g&radius=10000&type=salons&key=$apiKey&pagetoken=$x';
+    }
+
+    if (x != null && x.isEmpty) {
+      return;
+    }
+
+    final uri = Uri.parse(request);
+    final response = await http.get(Uri.parse(request));
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        // return result['results']
+        //     .map<PlaceResponse>((p) => PlaceResponse(
+        //         p['name'], p['place_id'], p['photos'][0]['photo_reference']), p['next_page_token'])
+        //     .toList();
+
+        try {
+          pRT.token = result['next_page_token'];
+        } catch (e) {
+          pRT.token = '';
+        }
+
+        // List<PlaceResponse> list = result['results']
+        //     .map<PlaceResponse>((p) => PlaceResponse(
+        //         p['name'], p['place_id'], p['photos'][0]['photo_reference']))
+        //     .toList();
+
+        List<PlaceResponse> list = result['results'].map<PlaceResponse>((p) {
+          final name = p['name'];
+          final placeId = p['place_id'];
+          String photoReference = '';
+
+          // Check if 'photos' is present and not empty
+          if (p['photos'] != null && p['photos'].isNotEmpty) {
+            photoReference = p['photos'][0]['photo_reference'];
+          }
+
+          return PlaceResponse(name, placeId, photoReference);
+        }).toList();
+
+        pRT.placeResponseList = list;
+
+        setState(() {
+          posts[0] = posts[0] + list;
+          showNearbyPlaces = true;
+
+          posts[1] = pRT.token;
+        });
+
+        int x = 1;
+      }
+    }
   }
 
   static Future<List<PlaceResponse>> fetchNearbyPlaces(
@@ -109,10 +210,15 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   customSetState(TextEditingController c, bool x, Suggestion r) {
+    posts[0].clear();
     setState(() {
       _controller.text = r.description;
       showNearbyPlaces = true;
     });
+  }
+
+  Future<void> onTapCallBack() async {
+    await fetchPosts(lati, longi);
   }
 
   @override
@@ -120,32 +226,45 @@ class MyHomePageState extends State<MyHomePage> {
     return Stack(
       children: [
         SingleChildScrollView(
+            controller: scrollController,
             child: Column(children: <Widget>[
-          Container(
-            margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
-                  color: const Color(0xff1D1617).withOpacity(0.11),
-                  blurRadius: 40,
-                  spreadRadius: 0.0)
-            ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                textField(
-                  context,
-                  _controller,
-                  locationText,
-                  showNearbyPlaces,
-                  customSetState,
-                  callBackFunc,
+              Container(
+                margin: const EdgeInsets.only(left: 10, right: 10, top: 30),
+                decoration: BoxDecoration(boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xff1D1617).withOpacity(0.11),
+                      blurRadius: 40,
+                      spreadRadius: 0.0)
+                ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    textField(
+                      context,
+                      _controller,
+                      locationText,
+                      showNearbyPlaces,
+                      customSetState,
+                      callBackFunc,
+                      onTapCallBack,
+                    ),
+                    const SizedBox(height: 10),
+                    //visibility(showNearbyPlaces),
+
+                    if (posts[0].length != 0)
+                      ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: posts[0].length,
+                          itemBuilder: (context, index) {
+                            return PlaceListItem(place: posts[0][index]);
+
+                            //return Text(posts[0][0].name);
+                          }),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                visibility(showNearbyPlaces, context),
-              ],
-            ),
-          ),
-        ]))
+              ),
+            ]))
       ],
     );
   }
