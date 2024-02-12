@@ -2,6 +2,8 @@
 
 import 'dart:io';
 
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -35,6 +37,14 @@ class PlaceDetail extends StatefulWidget {
     this.reviews = const [],
     this.phoneNumber = '',
   });
+
+  static const String routeName = '/place-detail';
+
+  static Route route() {
+    return MaterialPageRoute(
+        builder: (_) => PlaceDetail(), 
+        settings: RouteSettings(name: routeName));
+  }
 
   static bool inner = true;
   @override
@@ -101,7 +111,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                     },
                     child: const Padding(
                         padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
-                        child: Icon(color: Colors.blue, Icons.arrow_back_ios))),
+                        child: Icon(color: Colors.grey, Icons.arrow_back_ios))),
                 pinned: true,
                 //snap: true,
                 floating: true,

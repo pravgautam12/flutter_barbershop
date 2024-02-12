@@ -11,6 +11,12 @@ import 'package:flutter_barbershop/home_page_widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/config/Theme.dart';
+import 'package:flutter_barbershop/config/app_router.dart';
+import 'package:flutter_barbershop/providers/filter_provider.dart';
+import 'package:provider/provider.dart';
+import 'screens/screens.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -30,14 +36,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Poppins',
-      ),
-      home: const Scaffold(
-          backgroundColor: Colors.white, appBar: null, body: MyHomePage()),
-    );
+    //wrapping Material app with this widget to be able to use FilterProvider inside the entire app
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => FilterProvider()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: theme(),
+          home: Scaffold(body: MyHomePage()),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          initialRoute: MyHomePage.routeName,
+        ));
   }
 }
 
@@ -46,7 +56,12 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
-  //final String title;
+  static const String routeName = '/';
+
+  static Route route() {
+    return MaterialPageRoute(
+        builder: (_) => MyHomePage(), settings: RouteSettings(name: routeName));
+  }
 
   @override
   State<MyHomePage> createState() => MyHomePageState();
@@ -179,20 +194,13 @@ class MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  static Future<PlaceResponse_Token> fetchNearbyPlaces(
-      double latitude, double longitude,
-      [String? x]) async {
+  static Future<List<PlaceResponse>> fetchNearbyPlaces(
+      double latitude, double longitude, BuildContext context) async {
     final sessionToken = const Uuid().v4();
     //final places = await PlaceApiProvider(sessionToken).getNearbyPlaces(latitude, longitude);
-    if (x == null) {
-      final places = await PlaceApiProvider(sessionToken)
-          .getNearbyPlaces(latitude, longitude);
-      return places;
-    } else {
-      final places = await PlaceApiProvider(sessionToken)
-          .getNearbyPlaces(latitude, longitude, x);
-      return places;
-    }
+    final places = await PlaceApiProvider(sessionToken)
+        .getNearbyPlaces(latitude, longitude, context);
+    return places;
   }
 
   @override
@@ -205,7 +213,7 @@ class MyHomePageState extends State<MyHomePage> {
     posts[0].clear();
     setState(() {
       _controller.text = r.description;
-      x = true;
+      showNearbyPlaces = true;
     });
   }
 
@@ -217,7 +225,6 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        //backgroundColor: Colors.white,
         SingleChildScrollView(
             controller: scrollController,
             child: Column(children: <Widget>[
@@ -242,7 +249,7 @@ class MyHomePageState extends State<MyHomePage> {
                       onTapCallBack,
                     ),
                     const SizedBox(height: 10),
-                    //visibility(showNearbyPlaces, context),
+                    //visibility(showNearbyPlaces),
 
                     if (posts[0].length != 0)
                       ListView.builder(
@@ -254,7 +261,6 @@ class MyHomePageState extends State<MyHomePage> {
 
                             //return Text(posts[0][0].name);
                           }),
-                    //Text('xx'),
                   ],
                 ),
               ),
