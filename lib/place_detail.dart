@@ -174,7 +174,7 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                                     child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
                                         child: Image.network(
-                                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photo_reference}&key=AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU",
                                             fit: BoxFit.cover))),
                             ],
                           ))),
@@ -355,12 +355,12 @@ class _PlaceDetailPageState extends State<PlaceDetail>
                           child: ClipRRect(
                               borderRadius: BorderRadius.circular(7),
                               child: Image.network(
-                                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU",
                                 fit: BoxFit.cover,
                                 //centerSlice: Rect.,
                               )),
                           // onTap: () =>
-                          //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg",
+                          //     "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${widget.photos[index]}&key=AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU",
                         );
                       },
                     )))

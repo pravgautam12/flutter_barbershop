@@ -9,7 +9,7 @@ import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
+const apiKey = "AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU";
 
 class Place {
   // String? streetNumber;
@@ -104,7 +104,7 @@ class PlaceApiProvider {
   static const String androidKey = 'YOUR_API_KEY_HERE';
   static const String iosKey = 'YOUR_API_KEY_HERE';
   //final apiKey = Platform.isAndroid ? androidKey : iosKey;
-  final apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
+  final apiKey = "AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU";
 
   Future<List<Suggestion>> fetchSuggestions(String input, String lang) async {
     final request =
@@ -172,7 +172,7 @@ class PlaceApiProvider {
   Future<List<PlaceResponse>> getNearbyPlaces(
       double l, double g, BuildContext context) async {
     //int radius = context.watch<FilterProvider>().distance;
-    const apiKey = "AIzaSyC63KBS5ACnWB3BRRlS9-OWX1zLHti7BBg";
+    const apiKey = "AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU";
     final request =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop'
         '&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
