@@ -70,6 +70,7 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
+  var resultCount = 4;
   bool isLoadingMore = false;
   final scrollController = ScrollController();
 
@@ -142,11 +143,9 @@ class MyHomePageState extends State<MyHomePage> {
     final uri = Uri.parse(request);
     final response = await http.get(Uri.parse(request));
 
-    if (response.statusCode == 200) 
-    {
+    if (response.statusCode == 200) {
       final result = json.decode(response.body);
-      if (result['status'] == 'OK') 
-      {
+      if (result['status'] == 'OK') {
         // return result['results']
         //     .map<PlaceResponse>((p) => PlaceResponse(
         //         p['name'], p['place_id'], p['photos'][0]['photo_reference']), p['next_page_token'])
@@ -180,11 +179,8 @@ class MyHomePageState extends State<MyHomePage> {
 
         setState(() {
           posts[0] = posts[0] + list;
-          var test = posts[0].length;
-          context.read<MiscellaneousProvider>().changeCount(resultCount: posts[0].length);
-//          var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+          resultCount = posts[0].length;
           showNearbyPlaces = true;
-
           posts[1] = pRT.token;
         });
 
@@ -201,6 +197,14 @@ class MyHomePageState extends State<MyHomePage> {
         .getNearbyPlaces(latitude, longitude, context);
     return places;
   }
+
+  Widget showResultCount(BuildContext context) {
+  // var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+  return Text(
+    "Showing $resultCount results",
+    style: const TextStyle(color: Colors.grey),
+  );
+}
 
   @override
   void dispose() {
@@ -494,12 +498,4 @@ String formatTime(String x) {
 String convertTwentyFourHourToTwelveHour(String x) {
   int y = int.parse(x) - 12;
   return y.toString();
-}
-
-Widget showResultCount(BuildContext context) {
-  var resultCount = context.watch<MiscellaneousProvider>().resultCount;
-  return Text(
-    "Showing $resultCount results",
-    style: const TextStyle(color: Colors.grey),
-  );
 }
