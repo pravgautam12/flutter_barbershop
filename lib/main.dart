@@ -70,6 +70,15 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
+  //couldn't use provider state management to store the resultCount value because fetchPosts() method 
+  //is where the value of resultCount had to be set. We need current context to use provider state management 
+  //but fetchPosts() is an async method and in those methods, it's not recommended to pass BuildContext as parameter. 
+  //another reason is a part of deeply nested method calls from multiple places which makes it confusing and a lot of work
+  //to pass BuildContext in so many places. 
+  //TODO in future: find a way to pass BuildContext as a global variable so that it doesn't have to be passed as parameter. 
+  //related stackoverflow post for this issue: 
+  //https://stackoverflow.com/questions/52176921/get-buildcontext-when-not-available-through-parameter
+  //If that's not possible, R&D into how context is accessed while using provider state mngmnt and see if there's a workaround. 
   var resultCount = 4;
   bool isLoadingMore = false;
   final scrollController = ScrollController();
