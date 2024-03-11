@@ -1,22 +1,16 @@
-import 'dart:io';
 import 'dart:core';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/providers/miscellaneous_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
 import 'package:flutter_barbershop/location.dart';
-import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_barbershop/home_page_widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_barbershop/config/Theme.dart';
 import 'package:flutter_barbershop/config/app_router.dart';
 import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:provider/provider.dart';
-import 'screens/screens.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -40,6 +34,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => FilterProvider()),
+          ChangeNotifierProvider(create: (context) => MiscellaneousProvider())
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -95,7 +90,6 @@ class MyHomePageState extends State<MyHomePage> {
       //   isLoadingMore = true;
       // });
       fetchPosts(lati, longi, posts[1]);
-      print('wassup');
       // setState(() {
       //   isLoadingMore = false;
       // });
@@ -148,9 +142,11 @@ class MyHomePageState extends State<MyHomePage> {
     final uri = Uri.parse(request);
     final response = await http.get(Uri.parse(request));
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200) 
+    {
       final result = json.decode(response.body);
-      if (result['status'] == 'OK') {
+      if (result['status'] == 'OK') 
+      {
         // return result['results']
         //     .map<PlaceResponse>((p) => PlaceResponse(
         //         p['name'], p['place_id'], p['photos'][0]['photo_reference']), p['next_page_token'])
@@ -184,6 +180,9 @@ class MyHomePageState extends State<MyHomePage> {
 
         setState(() {
           posts[0] = posts[0] + list;
+          var test = posts[0].length;
+          context.read<MiscellaneousProvider>().changeCount(resultCount: posts[0].length);
+//          var resultCount = context.watch<MiscellaneousProvider>().resultCount;
           showNearbyPlaces = true;
 
           posts[1] = pRT.token;
@@ -250,6 +249,15 @@ class MyHomePageState extends State<MyHomePage> {
                     ),
                     const SizedBox(height: 10),
                     //visibility(showNearbyPlaces),
+                    if (posts[0].length != 0)
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              showResultCount(context),
+                            ],
+                          )),
 
                     if (posts[0].length != 0)
                       ListView.builder(
@@ -258,7 +266,6 @@ class MyHomePageState extends State<MyHomePage> {
                           itemCount: posts[0].length,
                           itemBuilder: (context, index) {
                             return PlaceListItem(place: posts[0][index]);
-
                             //return Text(posts[0][0].name);
                           }),
                   ],
@@ -270,22 +277,25 @@ class MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class PlaceListItem extends StatelessWidget {
+class PlaceListItem extends StatelessWidget 
+{
   final PlaceResponse? place;
   static final String sessionToken = const Uuid().v4();
 
   PlaceListItem({super.key, required this.place});
   //     : sessionToken = const Uuid().v4();
 
-  static Future<PlaceDetails> fetchPlaceDetails(String p) async {
-    final PlaceApi = new PlaceApiProvider(sessionToken);
-    PlaceDetails PD = await PlaceApi.getAddress(p, lati, longi);
-    return PD;
+  static Future<PlaceDetails> fetchPlaceDetails(String p) async 
+  {
+    final placeApi = PlaceApiProvider(sessionToken);
+    PlaceDetails placeDetails = await placeApi.getAddress(p, lati, longi);
+    return placeDetails;
   }
 
   PlaceDetails? placedetails;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) 
+  {
     return placeDetails(place, placedetails, context);
   }
 }
@@ -484,4 +494,12 @@ String formatTime(String x) {
 String convertTwentyFourHourToTwelveHour(String x) {
   int y = int.parse(x) - 12;
   return y.toString();
+}
+
+Widget showResultCount(BuildContext context) {
+  var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+  return Text(
+    "Showing $resultCount results",
+    style: const TextStyle(color: Colors.grey),
+  );
 }

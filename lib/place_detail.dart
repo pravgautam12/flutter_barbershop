@@ -7,12 +7,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:uuid/uuid.dart';
-import 'package:flutter_barbershop/address_search.dart';
-import 'package:flutter_barbershop/place_service.dart';
-import 'package:flutter_barbershop/location.dart';
-import 'package:flutter_barbershop/main.dart';
-import 'package:flutter_barbershop/models/constants.dart';
 
 class PlaceDetail extends StatefulWidget {
   final String? placeId;

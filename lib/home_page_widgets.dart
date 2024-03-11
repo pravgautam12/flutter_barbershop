@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
-import 'package:flutter_barbershop/location.dart';
 import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_barbershop/main.dart';
 
 Widget visibility(bool showNearbyPlaces, BuildContext context) {

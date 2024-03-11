@@ -175,7 +175,7 @@ class PlaceApiProvider {
     const apiKey = "AIzaSyBQ_vedKFD899jLzjhkub_2N1oW5udgZOU";
     final request =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=barbershop'
-        '&location=$l,$g&radius=10000&type=salons&key=$apiKey&sessiontoken=$sessionToken';
+        '&location=$l,$g&radius=radius&type=salons&key=$apiKey&sessiontoken=$sessionToken';
 
     final response = await http.get(Uri.parse(request));
 
