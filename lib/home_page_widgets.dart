@@ -97,7 +97,7 @@ Widget placeDetails(place, PlaceDetails? placedetails, BuildContext context) {
   return GestureDetector(
     child: Container(
         child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const SizedBox(height: 0),

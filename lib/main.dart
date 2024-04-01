@@ -70,15 +70,15 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
-  //couldn't use provider state management to store the resultCount value because fetchPosts() method 
-  //is where the value of resultCount had to be set. We need current context to use provider state management 
-  //but fetchPosts() is an async method and in those methods, it's not recommended to pass BuildContext as parameter. 
+  //couldn't use provider state management to store the resultCount value because fetchPosts() method
+  //is where the value of resultCount had to be set. We need current context to use provider state management
+  //but fetchPosts() is an async method and in those methods, it's not recommended to pass BuildContext as parameter.
   //another reason is a part of deeply nested method calls from multiple places which makes it confusing and a lot of work
-  //to pass BuildContext in so many places. 
-  //TODO in future: find a way to pass BuildContext as a global variable so that it doesn't have to be passed as parameter. 
-  //related stackoverflow post for this issue: 
+  //to pass BuildContext in so many places.
+  //TODO in future: find a way to pass BuildContext as a global variable so that it doesn't have to be passed as parameter.
+  //related stackoverflow post for this issue:
   //https://stackoverflow.com/questions/52176921/get-buildcontext-when-not-available-through-parameter
-  //If that's not possible, R&D into how context is accessed while using provider state mngmnt and see if there's a workaround. 
+  //If that's not possible, R&D into how context is accessed while using provider state mngmnt and see if there's a workaround.
   var resultCount = 4;
   bool isLoadingMore = false;
   final scrollController = ScrollController();
@@ -208,12 +208,12 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Widget showResultCount(BuildContext context) {
-  // var resultCount = context.watch<MiscellaneousProvider>().resultCount;
-  return Text(
-    "Showing $resultCount results",
-    style: const TextStyle(color: Colors.grey),
-  );
-}
+    // var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+    return Text(
+      "Showing $resultCount results",
+      style: const TextStyle(color: Colors.grey),
+    );
+  }
 
   @override
   void dispose() {
@@ -274,6 +274,7 @@ class MyHomePageState extends State<MyHomePage> {
 
                     if (posts[0].length != 0)
                       ListView.builder(
+                          padding: EdgeInsets.zero,
                           physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: posts[0].length,
@@ -290,16 +291,14 @@ class MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class PlaceListItem extends StatelessWidget 
-{
+class PlaceListItem extends StatelessWidget {
   final PlaceResponse? place;
   static final String sessionToken = const Uuid().v4();
 
   PlaceListItem({super.key, required this.place});
   //     : sessionToken = const Uuid().v4();
 
-  static Future<PlaceDetails> fetchPlaceDetails(String p) async 
-  {
+  static Future<PlaceDetails> fetchPlaceDetails(String p) async {
     final placeApi = PlaceApiProvider(sessionToken);
     PlaceDetails placeDetails = await placeApi.getAddress(p, lati, longi);
     return placeDetails;
@@ -307,8 +306,7 @@ class PlaceListItem extends StatelessWidget
 
   PlaceDetails? placedetails;
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     return placeDetails(place, placedetails, context);
   }
 }
