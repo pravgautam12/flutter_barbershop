@@ -1,22 +1,16 @@
-import 'dart:io';
 import 'dart:core';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_barbershop/providers/miscellaneous_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_barbershop/address_search.dart';
 import 'package:flutter_barbershop/place_service.dart';
 import 'package:flutter_barbershop/location.dart';
-import 'package:flutter_barbershop/place_detail.dart';
 import 'package:flutter_barbershop/home_page_widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_barbershop/config/Theme.dart';
 import 'package:flutter_barbershop/config/app_router.dart';
 import 'package:flutter_barbershop/providers/filter_provider.dart';
 import 'package:provider/provider.dart';
-import 'screens/screens.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -40,6 +34,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => FilterProvider()),
+          ChangeNotifierProvider(create: (context) => MiscellaneousProvider())
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -75,6 +70,16 @@ class MyHomePageState extends State<MyHomePage> {
   double placeIdLati = 0.00;
   double placeIdLongi = 0.00;
   bool showNearbyPlaces = false;
+  //couldn't use provider state management to store the resultCount value because fetchPosts() method 
+  //is where the value of resultCount had to be set. We need current context to use provider state management 
+  //but fetchPosts() is an async method and in those methods, it's not recommended to pass BuildContext as parameter. 
+  //another reason is a part of deeply nested method calls from multiple places which makes it confusing and a lot of work
+  //to pass BuildContext in so many places. 
+  //TODO in future: find a way to pass BuildContext as a global variable so that it doesn't have to be passed as parameter. 
+  //related stackoverflow post for this issue: 
+  //https://stackoverflow.com/questions/52176921/get-buildcontext-when-not-available-through-parameter
+  //If that's not possible, R&D into how context is accessed while using provider state mngmnt and see if there's a workaround. 
+  var resultCount = 4;
   bool isLoadingMore = false;
   final scrollController = ScrollController();
 
@@ -95,7 +100,6 @@ class MyHomePageState extends State<MyHomePage> {
       //   isLoadingMore = true;
       // });
       fetchPosts(lati, longi, posts[1]);
-      print('wassup');
       // setState(() {
       //   isLoadingMore = false;
       // });
@@ -184,8 +188,8 @@ class MyHomePageState extends State<MyHomePage> {
 
         setState(() {
           posts[0] = posts[0] + list;
+          resultCount = posts[0].length;
           showNearbyPlaces = true;
-
           posts[1] = pRT.token;
         });
 
@@ -202,6 +206,14 @@ class MyHomePageState extends State<MyHomePage> {
         .getNearbyPlaces(latitude, longitude, context);
     return places;
   }
+
+  Widget showResultCount(BuildContext context) {
+  // var resultCount = context.watch<MiscellaneousProvider>().resultCount;
+  return Text(
+    "Showing $resultCount results",
+    style: const TextStyle(color: Colors.grey),
+  );
+}
 
   @override
   void dispose() {
@@ -250,6 +262,15 @@ class MyHomePageState extends State<MyHomePage> {
                     ),
                     const SizedBox(height: 10),
                     //visibility(showNearbyPlaces),
+                    if (posts[0].length != 0)
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              showResultCount(context),
+                            ],
+                          )),
 
                     if (posts[0].length != 0)
                       ListView.builder(
@@ -258,7 +279,6 @@ class MyHomePageState extends State<MyHomePage> {
                           itemCount: posts[0].length,
                           itemBuilder: (context, index) {
                             return PlaceListItem(place: posts[0][index]);
-
                             //return Text(posts[0][0].name);
                           }),
                   ],
@@ -270,22 +290,25 @@ class MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class PlaceListItem extends StatelessWidget {
+class PlaceListItem extends StatelessWidget 
+{
   final PlaceResponse? place;
   static final String sessionToken = const Uuid().v4();
 
   PlaceListItem({super.key, required this.place});
   //     : sessionToken = const Uuid().v4();
 
-  static Future<PlaceDetails> fetchPlaceDetails(String p) async {
-    final PlaceApi = new PlaceApiProvider(sessionToken);
-    PlaceDetails PD = await PlaceApi.getAddress(p, lati, longi);
-    return PD;
+  static Future<PlaceDetails> fetchPlaceDetails(String p) async 
+  {
+    final placeApi = PlaceApiProvider(sessionToken);
+    PlaceDetails placeDetails = await placeApi.getAddress(p, lati, longi);
+    return placeDetails;
   }
 
   PlaceDetails? placedetails;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) 
+  {
     return placeDetails(place, placedetails, context);
   }
 }
